@@ -16,3 +16,5 @@ interrupts/executions
 hazard detection unit
 forward/bypassing unit
 
+RV32I/E ORE Cheat Sheet
+https://docs.google.com/spreadsheets/d/1xUd0P1IlebuhuJcfEDhZIQoPBO1-mNBDbAKRIiS_NuM/edit?gid=1452741#gid=1452741
