@@ -15,3 +15,7 @@ xsim alu_sim -R
 # Open waveform with XSIm 
 In the xelab step, add `-debug typical` flag
 Then, xsim alu_sim -gui
+
+
+# The spec
+https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html
