@@ -1,14 +1,3 @@
-parameter [3:0] add_alu = 4'b0000;
-parameter [3:0] sub_alu = 4'b0001;
-parameter [3:0] sll_alu = 4'b0010;
-parameter [3:0] slt_alu = 4'b0011;
-parameter [3:0] sltu_alu = 4'b0100;
-parameter [3:0] xor_alu = 4'b0101;
-parameter [3:0] srl_alu = 4'b0110;
-parameter [3:0] sra_alu = 4'b0111;
-parameter [3:0] or_alu = 4'b1000;
-parameter [3:0] and_alu = 4'b1001;
-
 module alu_tb();
     logic [31:0] a, b, result;
     logic [3:0] op;
@@ -18,6 +7,23 @@ module alu_tb();
     int errors = 0;
 
     alu dut (.a(a), .b(b), .op(op), .result(result));
+
+    //this is the reference model
+    function automatic logic [31:0] model(logic [31:0] x, y, logic [3:0] f);
+        case (f):
+            4'b0000: return x + y;
+            4'b0001: return x - y;
+            4'b0010: return (x << y[4:0]);
+            4'b0011: return (($signed(x) < $signed(y)) ? 32'd1 : 32'b0)
+            4'b0100: return (($unsigned(x) < $unsigned(y)) ? 32'd1 : 32'b0)
+            4'b0101: return x ^ y;
+            4'b0110: return x >> y[4:0];
+            4'b0111: return ($signed(x) >>> y[4:0]);
+            4'b1000: return x | y;
+            4'b1001: return x & y;
+            default: return '0;
+        endcase
+    endfunction
 
     task automatic check(logic [31:0] a_in, b_in, logic [3:0] op_in, logic [31:0] expected);
         a = a_in; b = b_in; op = op_in;
