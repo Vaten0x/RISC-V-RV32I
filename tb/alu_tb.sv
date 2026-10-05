@@ -10,12 +10,12 @@ module alu_tb();
 
     //this is the reference model
     function automatic logic [31:0] model(logic [31:0] x, y, logic [3:0] f);
-        case (f):
+        case (f)
             4'b0000: return x + y;
             4'b0001: return x - y;
             4'b0010: return (x << y[4:0]);
-            4'b0011: return (($signed(x) < $signed(y)) ? 32'd1 : 32'b0)
-            4'b0100: return (($unsigned(x) < $unsigned(y)) ? 32'd1 : 32'b0)
+            4'b0011: return (($signed(x) < $signed(y)) ? 32'd1 : 32'b0);
+            4'b0100: return (($unsigned(x) < $unsigned(y)) ? 32'd1 : 32'b0);
             4'b0101: return x ^ y;
             4'b0110: return x >> y[4:0];
             4'b0111: return ($signed(x) >>> y[4:0]);
