@@ -18,4 +18,6 @@ Then, xsim alu_sim -gui
 
 
 # The spec
+https://riscv.github.io/riscv-isa-manual/snapshot/spec/#rv32
+
 https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html
