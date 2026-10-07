@@ -16,16 +16,17 @@ module imm_gen
         case (imm_sel)
             IMM_I: begin
                 imm[11:0] = inst[31:20];
-                imm[31:12] = 20'd0;
+                imm[31:12] = {20{inst[31]}};
             end
             IMM_S: begin
                 imm[11:0] = { inst[31:25], inst[11:7] };
-                imm[31:12] = 20'd0;
+                imm[31:12] = {20{inst[31]}};
             end
             IMM_B: begin
                 imm[0] = 1'd0;
                 imm[10:1] = { inst[30:25], inst[11:8] };
-                imm[31:11] = 21'd0;
+                imm[11] = inst[7];
+                imm[31:12] = {20{inst[31]}};
             end
             IMM_U: begin
                 imm[11:0] = 12'd0;
@@ -34,8 +35,9 @@ module imm_gen
             IMM_J: begin
                 imm[0] = 1'd0;
                 imm[10:1] = inst[30:21];
+                imm[11] = inst[20];
                 imm[19:12] = inst[19:12];
-                imm[31:20] = 12'd0;
+                imm[31:20] = {12{inst[31]}};
             end
             default: imm = 32'd0;
         endcase
