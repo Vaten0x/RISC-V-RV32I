@@ -1,16 +1,10 @@
-module imm_gen (
+module imm_gen 
+    import rv32i_pkg::*;
+(
     input logic [31:0] inst,
     input logic [2:0] imm_sel,
     output logic [31:0] imm
 );
-
-    typedef enum logic [2:0] {
-        IMM_I = 3'b000,
-        IMM_S = 3'b001,
-        IMM_B = 3'b010,
-        IMM_U = 3'b011,
-        IMM_J = 3'b100
-    } imm_sel_t;
 
     //have to build the formats of different immediate encoiding variants, chapter 2.1.3 in riscv-isa-manual
 
@@ -20,14 +14,30 @@ module imm_gen (
 
     always_comb begin
         case (imm_sel)
-            IMM_I: imm[11:0] = inst[31:20];
-            IMM_S: imm[11:0] = { inst[31:25], inst[11:7] };
-            IMM_B: imm[10:1] = { inst[30:25], inst[11:8] };
-            IMM_U: imm[31:12] = inst[31:12];
+            IMM_I: begin
+                imm[11:0] = inst[31:20];
+                imm[31:12] = 20'd0;
+            end
+            IMM_S: begin
+                imm[11:0] = { inst[31:25], inst[11:7] };
+                imm[31:12] = 20'd0;
+            end
+            IMM_B: begin
+                imm[0] = 1'd0;
+                imm[10:1] = { inst[30:25], inst[11:8] };
+                imm[31:11] = 21'd0;
+            end
+            IMM_U: begin
+                imm[11:0] = 12'd0;
+                imm[31:12] = inst[31:12];
+            end
             IMM_J: begin
+                imm[0] = 1'd0;
                 imm[10:1] = inst[30:21];
                 imm[19:12] = inst[19:12];
+                imm[31:20] = 12'd0;
             end
+            default: imm = 32'd0;
         endcase
     end
 
