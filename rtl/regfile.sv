@@ -1,6 +1,6 @@
 module regfile( 
     input logic clk,
-    input logic rst,
+    input logic rst_n,
     input logic we,
     input logic [4:0] rs1, rs2, 
     input logic [4:0] write_addr,
@@ -13,7 +13,7 @@ module regfile(
 
     //this is the part where i need to do the write commands 
     always_ff @(posedge clk) begin
-        if (rst) begin
+        if (~rst_n) begin
             for (int i = 0; i < 32; i++) begin
                 regs[i] <= 32'd0;
             end
