@@ -41,6 +41,13 @@ module cpu_top
     logic [31:0] rd1, rd2;
     logic [31:0] ALU_result;
 
+    pc PC(
+        .clk(clk),
+        .rst_n(rst_n),
+        .next_pc(),
+        .pc()
+    )
+
     regfile REGFILE(
         .clk(clk),
         .rst_n(rst_n),
