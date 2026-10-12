@@ -2,7 +2,8 @@ module cpu_top
     import rv32i_pkg::*;
 (
     input logic clk,
-    input logic rst_n
+    input logic rst_n,
+    input logic [31:0] instr
 );
 
     // Implementing just for ADDI for now
