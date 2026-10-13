@@ -5,16 +5,6 @@ module cpu_top
     input logic rst_n
 );
 
-    // Implementing just for ADDI for now
-
-    // https://docs.riscv.org/reference/isa/v20260120/unpriv/rv-32-64g.html
-    // ADDI: 
-    /*
-    31        20 19  15 14  12 11   7 6      0
-    |  imm[11:0] | rs1  | 000  |  rd  | 0010011 |  - I-type
-                        funct3         opcode
-    */
-
     logic [31:0] instr;
 
     logic [31:0] imm;

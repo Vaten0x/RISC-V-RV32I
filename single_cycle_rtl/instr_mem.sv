@@ -14,12 +14,9 @@ module instr_mem(
         note that 2^10 is 1024, so we only need 10 bits of addr for INSTR_RAM indexing
 
         we wanna just remove the last two bits and use it to index it
-        
+
         instr[31:0] = INSTR_RAM[addr[12:2]]
     */
-
-    //Program 1:
-    //32'h00500093; //addi x1, x0, 5 (x1 = 5)
 
     //this is for the sim
     initial $readmemh("hex_files/program1.hex", INSTR_RAM);
