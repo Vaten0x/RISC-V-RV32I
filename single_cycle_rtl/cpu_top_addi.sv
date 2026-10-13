@@ -2,8 +2,7 @@ module cpu_top
     import rv32i_pkg::*;
 (
     input logic clk,
-    input logic rst_n,
-    input logic [31:0] instr
+    input logic rst_n
 );
 
     // Implementing just for ADDI for now
@@ -16,10 +15,7 @@ module cpu_top
                         funct3         opcode
     */
 
-    // addi rd, rs1, imm means rd = rs1 + sign_extended(imm)
-
-    // For I-type:
-    logic [31:0] instr = 32'h00500093; //addi x1, x0, 5 (x1 = 5)
+    logic [31:0] instr;
 
     logic [31:0] imm;
     logic [4:0] rs1;
@@ -41,11 +37,19 @@ module cpu_top
     logic [31:0] rd1, rd2;
     logic [31:0] ALU_result;
 
+    logic [31:0] pc;
+    logic [31:0] next_pc;
+
     pc PC(
         .clk(clk),
         .rst_n(rst_n),
-        .next_pc(),
-        .pc()
+        .next_pc(next_pc),
+        .pc(pc)
+    )
+
+    instr_mem INSTR_MEM(
+        .addr(pc),
+        .instr(instr)
     )
 
     regfile REGFILE(

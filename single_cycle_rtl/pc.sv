@@ -13,4 +13,6 @@ module pc(
         end
     end
 
+    assign next_pc = pc + 32'h4;
+
 endmodule
