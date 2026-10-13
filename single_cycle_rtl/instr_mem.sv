@@ -11,18 +11,19 @@ module instr_mem(
         addr ...1000  ->  slot 2  =  INSTR_RAM[2]
         addr ...1100  ->  slot 3  =  INSTR_RAM[3]
 
-        we wanna just remove the last two bits and change one hot encoding to decimal value to index on mem
+        note that 2^10 is 1024, so we only need 10 bits of addr for INSTR_RAM indexing
 
-        so instr[31:0] = if addr == 32'd0, INSTR_RAM[0] 
-        else instr[31:0] = INSTR_RAM[{ 2'b00, addr[31:2] }]
+        we wanna just remove the last two bits and use it to index it
+        
+        instr[31:0] = INSTR_RAM[addr[12:2]]
     */
 
     //Program 1:
     //32'h00500093; //addi x1, x0, 5 (x1 = 5)
 
     //this is for the sim
-    initial $readmemh("hex_files\program1.hex", INSTR_RAM);
+    initial $readmemh("hex_files/program1.hex", INSTR_RAM);
 
-    assign instr = INSTR_RAM[{ 2'b00, addr[31:2] }];
+    assign instr = INSTR_RAM[addr[11:2]];
 
 endmodule
