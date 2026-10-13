@@ -45,12 +45,12 @@ module cpu_top
         .rst_n(rst_n),
         .next_pc(next_pc),
         .pc(pc)
-    )
+    );
 
     instr_mem INSTR_MEM(
         .addr(pc),
         .instr(instr)
-    )
+    );
 
     regfile REGFILE(
         .clk(clk),

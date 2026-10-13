@@ -14,15 +14,15 @@ module instr_mem(
         we wanna just remove the last two bits and change one hot encoding to decimal value to index on mem
 
         so instr[31:0] = if addr == 32'd0, INSTR_RAM[0] 
-        else instr[31:0] = INSTR_RAM[hot-encoding of addr[31:2] to decimal]
+        else instr[31:0] = INSTR_RAM[{ 2'b00, addr[31:2] }]
     */
 
     //Program 1:
     //32'h00500093; //addi x1, x0, 5 (x1 = 5)
 
     //this is for the sim
-    initial $readmemh("C:\Users\renew\Downloads\vscode\RISC-V-RV32I\hex_files\program1.hex", INSTR_RAM);
+    initial $readmemh("hex_files\program1.hex", INSTR_RAM);
 
-    assign instr = INSTR_RAM[addr[31:2]];
+    assign instr = INSTR_RAM[{ 2'b00, addr[31:2] }];
 
 endmodule
