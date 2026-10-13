@@ -10,9 +10,8 @@ module pc(
             pc <= 32'd0; //set it to 0 for rst for now 
         end else begin
             pc <= next_pc;
+            next_pc <= pc + 32'h4;
         end
     end
-
-    assign next_pc = pc + 32'h4;
 
 endmodule
