@@ -5,7 +5,7 @@ module pc(
     output logic [31:0] pc
 );
 
-    always_ff @(posedge clk or negedge rst_n) begin
+    always_ff @(posedge clk) begin
         if (~rst_n) begin
             pc <= 32'd0; //set it to 0 for rst for now 
         end else begin

@@ -16,8 +16,9 @@ module cpu_top_tb();
     );
 
     initial begin
-        $display()
+        @(posedge clk);
+        $display();
     end
 
-
+    $finish;
 endmodule
