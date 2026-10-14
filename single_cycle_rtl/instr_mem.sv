@@ -15,7 +15,7 @@ module instr_mem(
 
         we wanna just remove the last two bits and use it to index it
 
-        instr[31:0] = INSTR_RAM[addr[12:2]]
+        instr[31:0] = INSTR_RAM[addr[11:2]]
     */
 
     //this is for the sim
