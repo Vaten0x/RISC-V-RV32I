@@ -42,6 +42,10 @@ module cpu_top
         .instr(instr)
     );
 
+    decoder DECODER(
+        .opcode(opcode)
+    )
+
     regfile REGFILE(
         .clk(clk),
         .rst_n(rst_n),

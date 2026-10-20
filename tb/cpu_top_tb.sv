@@ -3,7 +3,9 @@ module cpu_top_tb();
     logic rst_n;
 
     initial begin
-        clk = 0;
+        clk = 0; 
+        #5; 
+        clk = 1;
         rst_n = 0;
         #5;
         rst_n = 1;
@@ -18,7 +20,10 @@ module cpu_top_tb();
     initial begin
         @(posedge clk);
         $display();
-    end
 
-    $finish;
+
+
+
+        $finish;
+    end
 endmodule
