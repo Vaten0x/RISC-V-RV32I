@@ -13,22 +13,16 @@ module cpu_top
     logic [4:0] rd;
     logic [6:0] opcode;
 
-    assign rs1 = instr[19:15]; //TODO: hardset to IMM_I, I-type for now, change logic later
-    assign funct3 = instr[14:12]; //TODO: hardset to IMM_I, I-type for now, change logic later
-    assign rd = instr[11:7]; //TODO: hardset to IMM_I, I-type for now, change logic later
-    assign opcode = instr[6:0]; //TODO: hardset to IMM_I, I-type for now, change logic later
-
     logic we;
     logic [4:0] rs2;
-
-    assign we = 1'b1; //TODO: hardset to some value, I-type for now, change logic later
-    assign rs2 = 5'b00000; //TODO: hardset to some value, I-type for now, change logic later
 
     logic [31:0] rd1, rd2;
     logic [31:0] ALU_result;
 
     logic [31:0] pc;
     logic [31:0] next_pc;
+
+    assign we = 1'b1; //TODO: hardset to some value, I-type for now, change logic later
 
     pc PC(
         .clk(clk),
@@ -43,8 +37,13 @@ module cpu_top
     );
 
     decoder DECODER(
-        .opcode(opcode)
-    )
+        .instr(instr),
+        .opcode(opcode),
+        .rd(rd),
+        .rs1(rs1),
+        .rs2(rs2),
+        .funct3(funct3)
+    );
 
     regfile REGFILE(
         .clk(clk),
