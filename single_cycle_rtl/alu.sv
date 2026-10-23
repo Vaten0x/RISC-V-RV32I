@@ -7,7 +7,7 @@ module alu(
     wire [4:0] shift = b[4:0];
 
     always_comb begin
-        case(alu_sel) 
+        case(alu_op) 
             4'b0000: result = a + b; //add
             4'b0001: result = a - b; //sub
             4'b0010: result = a << shift; //sll
