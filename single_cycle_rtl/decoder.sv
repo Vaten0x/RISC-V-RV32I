@@ -25,6 +25,12 @@ module decoder
     assign funct7 = instr[31:25];
 
     always_comb begin
+        //add defaults to avoid latches before case statement
+        reg_write = 1'b0;
+        imm_sel = 3'b000;
+        alu_src_b = 1'b0;
+        alu_op = 4'b0000;
+
         case (opcode) 
             7'b0110011: begin //R-type
                 reg_write = 1'b1;
@@ -56,20 +62,13 @@ module decoder
                 else if (funct3 == 3'b101 && instr[30]) alu_op = 4'b0111; //srai
                 else if (funct3 == 3'b110) alu_op = 4'b1000; //ori
                 else if (funct3 == 3'b111) alu_op = 4'b1001; //andi
-
             end
             default: begin //at default, dont write it to a register
-                reg_write = 1'b0;
-                alu_src_b = 1'b1; //imm
+                reg_write = 1'b0; //disable reg write
+                alu_src_b = 1'b0; //reg
                 alu_op = 4'b0000;
                 imm_sel = IMM_I;
             end
         endcase
-
     end
-
-
-    
-
-
 endmodule

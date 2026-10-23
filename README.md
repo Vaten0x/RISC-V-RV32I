@@ -3,10 +3,9 @@
 Using Vivado Simulator v2025.2 with Spike
 
 # To run cpu_top_tb test and open the sim
-xvlog -sv single_cycle_rtl/pkg/rv32i_pkg.sv single_cycle_rtl/alu.sv single_cycle_rtl/imm_gen.sv single_cycle_rtl/pc.sv single_cycle_rtl/instr_mem.sv single_cycle_rtl/regfile.sv single_cycle_rtl/cpu_top.sv tb/cpu_top_tb.sv
+xvlog -sv single_cycle_rtl/pkg/rv32i_pkg.sv single_cycle_rtl/alu.sv single_cycle_rtl/decoder.sv single_cycle_rtl/imm_gen.sv single_cycle_rtl/pc.sv single_cycle_rtl/instr_mem.sv single_cycle_rtl/regfile.sv single_cycle_rtl/cpu_top.sv tb/cpu_top_tb.sv
 
 xelab cpu_top_tb -debug typical -s cpu_sim
-xsim cpu_sim -gui
 
 # To test tooling with UVM, try running hello_uvm.sv inside /tb:
 xvlog -sv -L uvm tb/hello_uvm.sv

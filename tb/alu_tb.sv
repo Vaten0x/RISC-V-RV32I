@@ -1,12 +1,12 @@
 module alu_tb();
     logic [31:0] a, b, result;
-    logic [3:0] op;
+    logic [3:0] alu_op;
     
     logic [31:0] ra, rb; //random stimulus
     logic [3:0] rop;
     int errors = 0;
 
-    alu dut (.a(a), .b(b), .op(op), .result(result));
+    alu dut (.a(a), .b(b), .alu_op(alu_op), .result(result));
 
     //this is the reference model
     function automatic logic [31:0] model(logic [31:0] x, y, logic [3:0] f);

@@ -59,21 +59,21 @@ module cpu_top
         .rs1(rs1),
         .rs2(rs2),
         .write_addr(rd),
-        .write_data(ALU_result), //TODO: hardset to IMM_I, I-type for now, change logic later
-        .rd1(rd1), //TODO: hardset to IMM_I, I-type for now, change logic later
-        .rd2(rd2) //TODO: hardset to IMM_I, I-type for now, change logic later
+        .write_data(ALU_result),
+        .rd1(rd1),
+        .rd2(rd2)
     );
 
     alu ALU(
-        .a(rd1), //TODO: hardset to IMM_I, I-type for now, change logic later
-        .b(imm), //TODO: hardset to IMM_I, I-type for now, change logic later
+        .a(rd1),
+        .b(alu_src_b ? imm : rd2),
         .alu_op(alu_op),
-        .result(ALU_result) //TODO: hardset to IMM_I, I-type for now, change logic later
+        .result(ALU_result)
     );
 
     imm_gen IMM_GEN(
         .inst(instr),
-        .imm_sel(IMM_I), //TODO: hardset to IMM_I, I-type for now, change logic later
+        .imm_sel(imm_sel),
         .imm(imm)
     );
 
