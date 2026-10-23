@@ -58,10 +58,11 @@ module decoder
                 else if (funct3 == 3'b111) alu_op = 4'b1001; //andi
 
             end
-            default: begin //at default, do add operation
+            default: begin //at default, do addi operation
                 reg_write = 1'b1;
-                alu_src_b = 1'b0; //register
+                alu_src_b = 1'b1; //imm
                 alu_op = 4'b0000;
+                imm_sel = IMM_I;
             end
         endcase
 
