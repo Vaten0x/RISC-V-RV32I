@@ -1,6 +1,6 @@
 module alu(
     input [31:0] a, b,
-    input [3:0] alu_sel,
+    input [3:0] alu_op,
     output logic [31:0] result
 );
 
