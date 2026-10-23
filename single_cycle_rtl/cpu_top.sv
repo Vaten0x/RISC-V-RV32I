@@ -7,14 +7,15 @@ module cpu_top
 
     logic [31:0] instr;
 
-    logic [31:0] imm;
-    logic [4:0] rs1;
-    logic [2:0] funct3;
-    logic [4:0] rd;
+    //instruction components
     logic [6:0] opcode;
+    logic [4:0] rd;
+    logic [4:0] rs1, rs2;
+    logic [2:0] funct3;
+    logic [6:0] funct7;
+    logic [31:0] imm;
 
     logic we;
-    logic [4:0] rs2;
 
     logic [31:0] rd1, rd2;
     logic [31:0] ALU_result;
@@ -42,7 +43,9 @@ module cpu_top
         .rd(rd),
         .rs1(rs1),
         .rs2(rs2),
-        .funct3(funct3)
+        .funct3(funct3),
+        .funct7(funct7),
+        .imm(imm)
     );
 
     regfile REGFILE(
