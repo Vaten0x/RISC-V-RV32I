@@ -24,3 +24,6 @@ Then, xsim alu_sim -gui
 
 # The spec
 https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html
+
+# RISCV RV32I Instructions
+https://www.cs.unh.edu/~pjh/courses/cs520/15spr/riscv-rv32i-instructions.pdf
