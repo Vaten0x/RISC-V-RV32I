@@ -46,7 +46,17 @@ module decoder
                 imm_sel = IMM_I;
                 alu_src_b = 1'b1; //immediate
 
-                //TODO: implement the rest for I type operations as well
+                if (funct3 == 3'b000) alu_op = 4'b0000; //addi
+                // no subi
+                else if (funct3 == 3'b001) alu_op = 4'b0010; //slli
+                else if (funct3 == 3'b010) alu_op = 4'b0011; //slti
+                else if (funct3 == 3'b011) alu_op = 4'b0100; //sltiu
+                else if (funct3 == 3'b100) alu_op = 4'b0101; //xori
+                else if (funct3 == 3'b101 && ~instr[30]) alu_op = 4'b0110; //srli
+                else if (funct3 == 3'b101 && instr[30]) alu_op = 4'b0111; //srai
+                else if (funct3 == 3'b110) alu_op = 4'b1000; //ori
+                else if (funct3 == 3'b111) alu_op = 4'b1001; //andi
+
             end
             default: begin //at default, do add operation
                 reg_write = 1'b1;
