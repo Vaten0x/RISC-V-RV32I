@@ -13,9 +13,10 @@ module cpu_top
     logic [4:0] rs1, rs2;
     logic [2:0] funct3;
     logic [6:0] funct7;
-    logic [31:0] imm;
-
-    logic we;
+    logic reg_write;
+    logic [2:0] imm_sel,
+    logic alu_src_b, //0 is reg, 1 is imm
+    logic [3:0] alu_op;
 
     logic [31:0] rd1, rd2;
     logic [31:0] ALU_result;
@@ -23,7 +24,7 @@ module cpu_top
     logic [31:0] pc;
     logic [31:0] next_pc;
 
-    assign we = 1'b1; //TODO: hardset to some value, I-type for now, change logic later
+    logic [31:0] imm;
 
     pc PC(
         .clk(clk),
@@ -45,13 +46,15 @@ module cpu_top
         .rs2(rs2),
         .funct3(funct3),
         .funct7(funct7),
-        .imm(imm)
+        .imm_sel(imm_sel),
+        .alu_src_b(alu_src_b),
+        .alu_op(alu_op)
     );
 
     regfile REGFILE(
         .clk(clk),
         .rst_n(rst_n),
-        .we(we),
+        .reg_write(reg_write),
         .rs1(rs1),
         .rs2(rs2),
         .write_addr(rd),
@@ -63,7 +66,7 @@ module cpu_top
     alu ALU(
         .a(rd1), //TODO: hardset to IMM_I, I-type for now, change logic later
         .b(imm), //TODO: hardset to IMM_I, I-type for now, change logic later
-        .op(4'b0000), //TODO: hardset to ADD operation, I-type for now, change logic later
+        .op(alu_op),
         .result(ALU_result) //TODO: hardset to IMM_I, I-type for now, change logic later
     );
 

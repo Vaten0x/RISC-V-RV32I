@@ -1,7 +1,7 @@
 module regfile( 
     input logic clk,
     input logic rst_n,
-    input logic we,
+    input logic reg_write,
     input logic [4:0] rs1, rs2, 
     input logic [4:0] write_addr,
     input logic [31:0] write_data,
@@ -17,7 +17,7 @@ module regfile(
             for (int i = 0; i < 32; i++) begin
                 regs[i] <= 32'd0;
             end
-        end else if (we && write_addr != 0) begin
+        end else if (reg_write && write_addr != 0) begin
             regs[write_addr] <= write_data;
         end
     end
