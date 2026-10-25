@@ -26,3 +26,58 @@ https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html
 
 # RISCV RV32I Instructions
 https://www.cs.unh.edu/~pjh/courses/cs520/15spr/riscv-rv32i-instructions.pdf
+
+# Instructions Finished:
+Decoded in `single_cycle_rtl/decoder.sv`. Only `addi` has been run in simulation so far; `tests/alu_ops.s` covers the rest once the testbench is finished.
+
+R-type (register-register):
+- [x] add
+- [x] sub
+- [x] sll
+- [x] slt
+- [x] sltu
+- [x] xor
+- [x] srl
+- [x] sra
+- [x] or
+- [x] and
+
+I-type (register-immediate):
+- [x] addi
+- [x] slti
+- [x] sltiu
+- [x] xori
+- [x] ori
+- [x] andi
+- [x] slli
+- [x] srli
+- [x] srai
+
+# Instructions To Do:
+Loads (I-type):
+- [ ] lb
+- [ ] lh
+- [ ] lw
+- [ ] lbu
+- [ ] lhu
+
+Stores (S-type):
+- [ ] sb
+- [ ] sh
+- [ ] sw
+
+Branches (B-type):
+- [ ] beq
+- [ ] bne
+- [ ] blt
+- [ ] bge
+- [ ] bltu
+- [ ] bgeu
+
+Jumps:
+- [ ] jal (J-type)
+- [ ] jalr (I-type)
+
+Upper immediate (U-type):
+- [ ] lui
+- [ ] auipc

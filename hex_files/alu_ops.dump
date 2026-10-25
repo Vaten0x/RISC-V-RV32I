@@ -1,0 +1,18 @@
+
+/mnt/c/Users/renew/Downloads/vscode/RISC-V-RV32I/hex_files/alu_ops.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000000 <__BSS_END__-0x102c>:
+   0:	00500093          	addi	x1,x0,5
+   4:	ffd00113          	addi	x2,x0,-3
+   8:	002081b3          	add	x3,x1,x2
+   c:	40208233          	sub	x4,x1,x2
+  10:	001122b3          	slt	x5,x2,x1
+  14:	00113333          	sltu	x6,x2,x1
+  18:	40115393          	srai	x7,x2,0x1
+  1c:	01c15413          	srli	x8,x2,0x1c
+  20:	0ff0c493          	xori	x9,x1,255
+  24:	00409513          	slli	x10,x1,0x4
+  28:	00000073          	ecall

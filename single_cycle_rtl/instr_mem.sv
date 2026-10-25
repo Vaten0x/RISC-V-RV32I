@@ -19,7 +19,7 @@ module instr_mem(
     */
 
     //this is for the sim
-    initial $readmemh("hex_files/program1.hex", INSTR_RAM);
+    initial $readmemh("hex_files/alu_ops.hex", INSTR_RAM);
 
     assign instr = INSTR_RAM[addr[11:2]];
 
