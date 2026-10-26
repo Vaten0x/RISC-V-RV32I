@@ -41,15 +41,15 @@ module cpu_top_tb();
         check_reg(4, 32'h00000008); //sub  x4, x1, x2
         check_reg(5, 32'h00000001); //slt  x5, x2, x1 (this is 1 because x2 < x1)
         check_reg(6, 32'h00000000); //sltu x6, x2, x1 (0 since unsigned, sign doesnt matter)
-        
-        
-        // check_reg(7, 32'h00000001); //srai x7, x2, 1 (x2 >> 1)
-        // check_reg(8, 32'h00000001); //srli x8, x2, 28 (x2 >> 28)
-        // check_reg(9, 32'h00000001); //xori x9, x1, 0xff
-        // check_reg(10, 32'h00000001); //slli x10, x1, 4
+        check_reg(7, 32'hFFFFFFFE); //srai x7, x2, 1 (x2 >> 1)
+        check_reg(8, 32'h0000000F); //srli x8, x2, 28 (x2 >> 28)
+        check_reg(9, 32'h000000FA); //xori x9, x1, 0xff
+        check_reg(10, 32'h00000050); //slli x10, x1, 4
 
         if (errors >= 1) begin
             $display("FAILED, errors=%0d, cycles=%0d", errors, cycles);
+        end else begin
+            $display("PASSED, cycles=%0d", cycles);
         end
 
         $finish;

@@ -17,6 +17,16 @@ xvlog -sv rtl/alu.sv tb/alu_tb.sv
 xelab alu_tb -s alu_sim
 xsim alu_sim -R
 
+# To run cpu_top_tb test for tests/alu_ops.s
+xvlog -sv single_cycle_rtl/pkg/rv32i_pkg.sv single_cycle_rtl/alu.sv single_cycle_rtl/decoder.sv single_cycle_rtl/imm_gen.sv single_cycle_rtl/pc.sv single_cycle_rtl/instr_mem.sv single_cycle_rtl/regfile.sv single_cycle_rtl/cpu_top.sv tb/cpu_top_tb.sv
+xelab cpu_top_tb -debug typical -s cpu_sim
+xsim cpu_sim -R
+
+waveform is:
+xsim cpu_sim -gui
+
+![Vivado Waveform](image-1.png)
+
 # Open waveform with XSIm with ALU example
 In the xelab step, add `-debug typical` flag
 Then, xsim alu_sim -gui
@@ -28,7 +38,7 @@ https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html
 https://www.cs.unh.edu/~pjh/courses/cs520/15spr/riscv-rv32i-instructions.pdf
 
 # Instructions Finished:
-Decoded in `single_cycle_rtl/decoder.sv`. Only `addi` has been run in simulation so far; `tests/alu_ops.s` covers the rest once the testbench is finished.
+Decoded in `single_cycle_rtl/decoder.sv`. `tests/alu_ops.s` passes in `cpu_top_tb` and covers add, sub, slt, sltu, addi, xori, slli, srli, srai. Not yet run in a test: sll, xor, srl, sra, or, and, slti, sltiu, ori, andi.
 
 R-type (register-register):
 - [x] add
