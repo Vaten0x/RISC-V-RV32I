@@ -10,7 +10,9 @@ module decoder
     output [6:0] funct7,
     output logic reg_write,
     output logic [2:0] imm_sel,
-    output logic alu_src_b,
+    output logic wb_sel,
+    output logic alu_src_a, //1 means using rs1
+    output logic alu_src_b, //1 means using rs2
     output logic [3:0] alu_op
 );
 
@@ -28,12 +30,16 @@ module decoder
         //add defaults to avoid latches before case statement
         reg_write = 1'b0;
         imm_sel = 3'b000;
+        wb_sel = 1'b0;
+        alu_src_a = 1'b0;
         alu_src_b = 1'b0;
         alu_op = 4'b0000;
 
         case (opcode) 
             7'b0110011: begin //R-type
                 reg_write = 1'b1;
+                wb_sel = 1'b0;
+                alu_src_a = 1'b1;
                 alu_src_b = 1'b0; //register
 
                 if (funct3 == 3'b000 && ~instr[30]) alu_op = 4'b0000; //add
@@ -50,6 +56,8 @@ module decoder
             7'b0010011: begin //R-type with immediate
                 reg_write = 1'b1;
                 imm_sel = IMM_I;
+                wb_sel = 1'b0;
+                alu_src_a = 1'b1;
                 alu_src_b = 1'b1; //immediate
 
                 if (funct3 == 3'b000) alu_op = 4'b0000; //addi
@@ -63,11 +71,25 @@ module decoder
                 else if (funct3 == 3'b110) alu_op = 4'b1000; //ori
                 else if (funct3 == 3'b111) alu_op = 4'b1001; //andi
             end
+            7'b0110111: begin //U-type LUI - adds 0 + imm straight to rd
+                reg_write = 1'b1;
+                imm_sel = IMM_U;
+                alu_src_a = 1'b0;
+                alu_src_b = 1'b0;
+                alu_op = 4'b0000; //add
+            end
+            7'b0010111: begin //U-type AUIPC - adds pc + imm to rd
+                reg_write = 1'b1;
+                imm_sel = IMM_U;
+            end
+
             default: begin //at default, dont write it to a register
                 reg_write = 1'b0; //disable reg write
-                alu_src_b = 1'b0; //reg
-                alu_op = 4'b0000;
                 imm_sel = IMM_I;
+                wb_sel = 1'b0;
+                alu_src_a = 1'b0;
+                alu_src_b = 1'b0;
+                alu_op = 4'b0000;
             end
         endcase
     end

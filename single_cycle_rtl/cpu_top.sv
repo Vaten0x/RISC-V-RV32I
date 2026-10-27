@@ -15,7 +15,12 @@ module cpu_top
     logic [6:0] funct7;
     logic reg_write;
     logic [2:0] imm_sel;
-    logic alu_src_b; //0 is reg, 1 is imm
+    logic wb_sel;
+    // For selecting output to something else:
+    // ALU_RESULT (0): if R-type, I-type, auipc
+    // imm (1): LUI
+    logic alu_src_a; //1 means using rs1
+    logic alu_src_b; //1 means using rs2
     logic [3:0] alu_op;
 
     logic [31:0] rd1, rd2;
@@ -48,6 +53,8 @@ module cpu_top
         .funct7(funct7),
         .reg_write(reg_write),
         .imm_sel(imm_sel),
+        .wb_sel(wb_sel),
+        .alu_src_a(alu_src_a),
         .alu_src_b(alu_src_b),
         .alu_op(alu_op)
     );
@@ -65,10 +72,10 @@ module cpu_top
     );
 
     alu ALU(
-        .a(rd1),
+        .a(alu_src_a ? rd1 : pc),
         .b(alu_src_b ? imm : rd2),
         .alu_op(alu_op),
-        .result(ALU_result)
+        .result(wb_sel ? imm : ALU_result)
     );
 
     imm_gen IMM_GEN(
