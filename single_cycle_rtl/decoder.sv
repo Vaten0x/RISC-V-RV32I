@@ -95,12 +95,12 @@ module decoder
                 alu_op = 4'b0000; //add
                 jump = 1'b1; //jump so pc can take pc + imm value and rd gets pc + 4 (next_pc) to save the return address
             end
-            7'b1100111: begin //I-type JALR - rd, rs1, imm
+            7'b1100111: begin //I-type JALR - rd, rs1, imm - used to return to that jal's saved address (x1)
                 reg_write = 1'b1;
                 imm_sel = IMM_I;
                 alu_src_a = 1'b1; //uses rs1
                 alu_src_b = 1'b0; //set to imm
-                alu_op = 4'b0000; //add
+                alu_op = 4'b1011; // (rs1 + imm) & ~1
                 jump = 1'b1; //jump so rd gets pc + 4 (next_pc)
             end
 
@@ -109,7 +109,7 @@ module decoder
                 imm_sel = IMM_I;
                 alu_src_a = 1'b0;
                 alu_src_b = 1'b0;
-                alu_op = 4'b1011; // (rs1 + imm) & ~1
+                alu_op = 4'b0000;
                 jump = 1'b0;
             end
         endcase
