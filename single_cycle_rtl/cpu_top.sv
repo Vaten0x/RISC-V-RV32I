@@ -60,6 +60,8 @@ module cpu_top
     data_mem DATA_MEM(
         .clk(clk),
         .write_en(reg_write),
+        .address(),
+        .data()
     )
 
     regfile REGFILE(

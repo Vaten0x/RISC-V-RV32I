@@ -105,10 +105,16 @@ module decoder
             end
             7'b0100011: //S-types
                 if (funct3 == 3'b000) begin //SB
+                    reg_write = 1'b0; //you are storing so no need for this
+                    imm_sel = IMM_S;
 
                 end else if (funct3 == 3'b001) begin //SH
+                    reg_write = 1'b0; //you are storing so no need for this
+                    imm_sel = IMM_S;
 
                 end else if (funct3 == 3'b010) begin //SW
+                    reg_write = 1'b0; //you are storing so no need for this
+                    imm_sel = IMM_S;
 
                 end
             default: begin //at default, dont write it to a register
