@@ -67,12 +67,12 @@ module decoder
                 else if (funct3 == 3'b110) alu_op = 4'b1000; //ori
                 else if (funct3 == 3'b111) alu_op = 4'b1001; //andi
             end
-            7'b0110111: begin //U-type LUI - adds 0 + imm straight to rd
+            7'b0110111: begin //U-type LUI - puts imm straight to rd using alu_op 1010
                 reg_write = 1'b1;
                 imm_sel = IMM_U;
                 alu_src_a = 1'b0; //not using rs1
                 alu_src_b = 1'b0; //not using rs2
-                alu_op = 4'b1010; //add
+                alu_op = 4'b1010; // return b operand
             end
             7'b0010111: begin //U-type AUIPC - adds pc + imm to rd
                 reg_write = 1'b1;

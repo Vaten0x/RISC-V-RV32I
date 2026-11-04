@@ -67,7 +67,7 @@ module cpu_top
     );
 
     alu ALU(
-        .a(rd1),
+        .a(alu_src_a ? rd1 : pc),
         .b(alu_src_b ? rd2 : imm),
         .alu_op(alu_op),
         .result(ALU_result)

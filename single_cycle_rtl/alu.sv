@@ -18,7 +18,7 @@ module alu(
             4'b0111: result = (a >> shift) | (a[31] ? ~(32'hFFFFFFFF >> shift) : 32'b0); //sra - shift right arithmetic
             4'b1000: result = a | b; //or
             4'b1001: result = a & b; //and
-            4'b1010: result = b; //just "b" this is specifically for LUI command
+            4'b1010: result = b; 
             default: result = 0;
         endcase
     end
