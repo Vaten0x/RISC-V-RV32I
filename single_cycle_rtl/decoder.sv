@@ -9,6 +9,7 @@ module decoder
     output [2:0] funct3,
     output [6:0] funct7,
     output logic reg_write,
+    output logic jump,
     output logic [2:0] imm_sel,
     output logic alu_src_a, //1 means using rs1
     output logic alu_src_b, //1 means using rs2
@@ -32,12 +33,14 @@ module decoder
         alu_src_a = 1'b0;
         alu_src_b = 1'b0;
         alu_op = 4'b0000;
+        jump = 1'b0;
 
         case (opcode) 
             7'b0110011: begin //R-type
                 reg_write = 1'b1;
                 alu_src_a = 1'b1;
                 alu_src_b = 1'b1; //register
+                jump = 1'b0;
 
                 if (funct3 == 3'b000 && ~instr[30]) alu_op = 4'b0000; //add
                 else if (funct3 == 3'b000 && instr[30]) alu_op = 4'b0001; //sub
@@ -55,6 +58,7 @@ module decoder
                 imm_sel = IMM_I;
                 alu_src_a = 1'b1;
                 alu_src_b = 1'b0; //immediate
+                jump = 1'b0;
 
                 if (funct3 == 3'b000) alu_op = 4'b0000; //addi
                 // no subi
@@ -73,6 +77,7 @@ module decoder
                 alu_src_a = 1'b0; //not using rs1
                 alu_src_b = 1'b0; //not using rs2
                 alu_op = 4'b1010; // return b operand
+                jump = 1'b0;
             end
             7'b0010111: begin //U-type AUIPC - adds pc + imm to rd
                 reg_write = 1'b1;
@@ -80,6 +85,7 @@ module decoder
                 alu_src_a = 1'b0; //set to pc
                 alu_src_b = 1'b0; //set to imm
                 alu_op = 4'b0000; //add
+                jump = 1'b0;
             end
             7'b1101111: begin //J-type JAL - rd,imm: rd <- pc + 4, then pc <- pc + imm
                 reg_write = 1'b1;
@@ -87,9 +93,15 @@ module decoder
                 alu_src_a = 1'b0; //set to pc
                 alu_src_b = 1'b0; //set to imm
                 alu_op = 4'b0000; //add
+                jump = 1'b1; //jump so pc can take pc + imm value and rd gets pc + 4 (next_pc) to save the return address
             end
-            7'b1100111: begin //J-type JALR - rd, rs1, imm
-
+            7'b1100111: begin //I-type JALR - rd, rs1, imm
+                reg_write = 1'b1;
+                imm_sel = IMM_I;
+                alu_src_a = 1'b1; //uses rs1
+                alu_src_b = 1'b0; //set to imm
+                alu_op = 4'b0000; //add
+                jump = 1'b1; //jump so rd gets pc + 4 (next_pc)
             end
 
             default: begin //at default, dont write it to a register
@@ -97,7 +109,8 @@ module decoder
                 imm_sel = IMM_I;
                 alu_src_a = 1'b0;
                 alu_src_b = 1'b0;
-                alu_op = 4'b0000;
+                alu_op = 4'b1011; // (rs1 + imm) & ~1
+                jump = 1'b0;
             end
         endcase
     end

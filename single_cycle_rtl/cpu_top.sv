@@ -14,6 +14,7 @@ module cpu_top
     logic [2:0] funct3;
     logic [6:0] funct7;
     logic reg_write;
+    logic jump;
     logic [2:0] imm_sel;
     logic alu_src_a; //1 means using rs1
     logic alu_src_b; //1 means using rs2
@@ -25,15 +26,15 @@ module cpu_top
     // For program counter
     logic [31:0] pc;
     logic [31:0] next_pc;
-    logic jump;
+
+    assign next_pc = pc + 32'h4;
 
     logic [31:0] imm;
 
     pc PC(
         .clk(clk),
         .rst_n(rst_n),
-        .jump(jump)
-        .next_pc(next_pc),
+        .next_pc(jump ? ALU_result : next_pc),
         .pc(pc)
     );
 
@@ -51,6 +52,7 @@ module cpu_top
         .funct3(funct3),
         .funct7(funct7),
         .reg_write(reg_write),
+        .jump(jump),
         .imm_sel(imm_sel),
         .alu_src_a(alu_src_a),
         .alu_src_b(alu_src_b),
@@ -64,7 +66,7 @@ module cpu_top
         .rs1(rs1),
         .rs2(rs2),
         .write_addr(rd),
-        .write_data(ALU_result),
+        .write_data(jump ? next_pc : ALU_result),
         .rd1(rd1),
         .rd2(rd2)
     );

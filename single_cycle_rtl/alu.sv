@@ -19,6 +19,7 @@ module alu(
             4'b1000: result = a | b; //or
             4'b1001: result = a & b; //and
             4'b1010: result = b; 
+            4'b1011: result = (a + b) & ~1; //for JALR
             default: result = 0;
         endcase
     end

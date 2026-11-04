@@ -1,8 +1,7 @@
 module pc(
     input logic clk,
     input logic rst_n,
-    input logic jump,
-    output logic [31:0] next_pc,
+    input logic [31:0] next_pc,
     output logic [31:0] pc
 );
 
@@ -13,7 +12,5 @@ module pc(
             pc <= next_pc;
         end
     end
-
-    assign next_pc = pc + 32'h4;
 
 endmodule
