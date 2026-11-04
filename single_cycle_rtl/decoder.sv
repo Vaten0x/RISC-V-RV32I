@@ -111,8 +111,6 @@ module decoder
                 end else if (funct3 == 3'b010) begin //SW
 
                 end
-
-
             default: begin //at default, dont write it to a register
                 reg_write = 1'b0; //disable reg write
                 imm_sel = IMM_I;

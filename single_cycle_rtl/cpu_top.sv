@@ -19,14 +19,12 @@ module cpu_top
     logic alu_src_a; //1 means using rs1
     logic alu_src_b; //1 means using rs2
     logic [3:0] alu_op;
-
     logic [31:0] rd1, rd2;
     logic [31:0] ALU_result;
 
     // For program counter
     logic [31:0] pc;
     logic [31:0] next_pc;
-
     assign next_pc = pc + 32'h4;
 
     logic [31:0] imm;
@@ -58,6 +56,11 @@ module cpu_top
         .alu_src_b(alu_src_b),
         .alu_op(alu_op)
     );
+
+    data_mem DATA_MEM(
+        .clk(clk),
+        .write_en(reg_write),
+    )
 
     regfile REGFILE(
         .clk(clk),
