@@ -77,9 +77,19 @@ module decoder
             7'b0010111: begin //U-type AUIPC - adds pc + imm to rd
                 reg_write = 1'b1;
                 imm_sel = IMM_U;
-                alu_src_a = 1'b0; //not using rs1
-                alu_src_b = 1'b0; //not using rs2
+                alu_src_a = 1'b0; //set to pc
+                alu_src_b = 1'b0; //set to imm
                 alu_op = 4'b0000; //add
+            end
+            7'b1101111: begin //J-type JAL - rd,imm: rd <- pc + 4, then pc <- pc + imm
+                reg_write = 1'b1;
+                imm_sel = IMM_J;
+                alu_src_a = 1'b0; //set to pc
+                alu_src_b = 1'b0; //set to imm
+                alu_op = 4'b0000; //add
+            end
+            7'b1100111: begin //J-type JALR - rd, rs1, imm
+
             end
 
             default: begin //at default, dont write it to a register

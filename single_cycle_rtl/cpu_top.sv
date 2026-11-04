@@ -22,14 +22,17 @@ module cpu_top
     logic [31:0] rd1, rd2;
     logic [31:0] ALU_result;
 
+    // For program counter
     logic [31:0] pc;
     logic [31:0] next_pc;
+    logic jump;
 
     logic [31:0] imm;
 
     pc PC(
         .clk(clk),
         .rst_n(rst_n),
+        .jump(jump)
         .next_pc(next_pc),
         .pc(pc)
     );

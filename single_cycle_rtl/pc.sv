@@ -1,6 +1,7 @@
 module pc(
     input logic clk,
     input logic rst_n,
+    input logic jump,
     output logic [31:0] next_pc,
     output logic [31:0] pc
 );
