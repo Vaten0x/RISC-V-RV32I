@@ -103,6 +103,15 @@ module decoder
                 alu_op = 4'b1011; // (rs1 + imm) & ~1
                 jump = 1'b1; //jump so rd gets pc + 4 (next_pc)
             end
+            7'b0100011: //S-types
+                if (funct3 == 3'b000) begin //SB
+
+                end else if (funct3 == 3'b001) begin //SH
+
+                end else if (funct3 == 3'b010) begin //SW
+
+                end
+
 
             default: begin //at default, dont write it to a register
                 reg_write = 1'b0; //disable reg write
