@@ -25,8 +25,7 @@ module instr_mem(
         instr[31:0] = INSTR_RAM[addr[11:2]]
     */
 
-    //this is for the sim
-    initial $readmemh("hex_files/alu_ops.hex", INSTR_RAM);
+    //for the sim, tb/cpu_top_tb.sv loads the program into INSTR_RAM (pick it with -testplusarg TEST_<name>)
 
     assign instr = INSTR_RAM[addr[11:2]];
 

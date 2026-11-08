@@ -35,10 +35,14 @@ module cpu_top
     logic mem_write; //write_en for DATA_MEM
     logic [31:0] read_data;
 
+    // For branch
+    logic branch; //decoder finds the instr to be a B type command
+    logic take_branch; //branch_decoder says to take the branch
+
     pc PC(
         .clk(clk),
         .rst_n(rst_n),
-        .next_pc(jump ? ALU_result : next_pc),
+        .next_pc(jump || (branch && take_branch) ? ALU_result : next_pc),
         .pc(pc)
     );
 
@@ -57,12 +61,20 @@ module cpu_top
         .funct7(funct7),
         .reg_write(reg_write),
         .jump(jump),
+        .branch(branch),
         .mem_load(mem_load),
         .mem_write(mem_write),
         .imm_sel(imm_sel),
         .alu_src_a(alu_src_a),
         .alu_src_b(alu_src_b),
         .alu_op(alu_op)
+    );
+
+    branch_decoder BRANCH_DECODER(
+        .rd1(rd1),
+        .rd2(rd2),
+        .funct3(funct3),
+        .take_branch(take_branch)
     );
 
     data_mem DATA_MEM(

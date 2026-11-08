@@ -1,8 +1,23 @@
+// Runs one riscv-tests program on cpu_top and prints PASS or FAIL.
+// Pick the test with a plusarg:  xsim cpu_sim -R -testplusarg TEST_add   (default: simple)
+// (No "=" in the plusarg: Vivado's xsim.bat on Windows splits arguments at "=".)
+// Hex files are in hex_files/ (rebuild commands are in README.md).
+// Tests are linked at 0x80000000 (stock riscv-tests link.ld) but run from PC 0, so an
+// address in build/<test>.dump = the PC in the waveform + 0x80000000.
+//
+// Each test ends on an ecall. At that point gp (x3) holds the result:
+//   x3 == 1                  -> PASS
+//   x3 == (n << 1) | 1       -> FAIL in test case n (search "TEST_*( n," in tests/riscv-tests/isa/rv64ui/<test>.S)
 module cpu_top_tb();
     logic clk;
     logic rst_n;
-    int errors = 0;
     int cycles = 0;
+    localparam int MAX_CYCLES = 10000;
+
+    string test;
+    string data_file;
+    int fd;
+    logic [31:0] gp;
 
     cpu_top CPU_TOP(
         .clk(clk),
@@ -10,46 +25,40 @@ module cpu_top_tb();
     );
 
     initial begin
-        clk = 0; 
-        forever #5 clk = ~clk; //100 MHz since freq = 1/T where T = 10ns 
+        clk = 0;
+        forever #5 clk = ~clk; //100 MHz since freq = 1/T where T = 10ns
     end
 
-    task check_reg(input int r, input logic [31:0] expected);
-        if (CPU_TOP.REGFILE.regs[r] !== expected) begin
-            $display("ERROR r=%0d CPU_TOP.REGFILE.regs[r]=%h expected=%h", r, CPU_TOP.REGFILE.regs[r], expected);
-            // will show something like x6 expected=00000000 got=000000001
-            errors += 1;
-        end
-    endtask
-
     initial begin
+        if (!$value$plusargs("TEST_%s", test)) test = "simple";
+
+        $readmemh({"hex_files/", test, ".hex"}, CPU_TOP.INSTR_MEM.INSTR_RAM);
+
         rst_n = 0;
         repeat (2) @(posedge clk);
         @(negedge clk) rst_n = 1;
 
+        // data_mem clears itself during reset, so load the test's data after reset is released
+        data_file = {"hex_files/", test, "_data.hex"};
+        fd = $fopen(data_file, "r");
+        if (fd != 0) begin
+            $fclose(fd);
+            $readmemh(data_file, CPU_TOP.DATA_MEM.DATA_MEM);
+        end
+
         // 00000073 is the ecall
-        while (CPU_TOP.INSTR_MEM.instr !== 32'h00000073 && cycles < 100) begin
+        while (CPU_TOP.INSTR_MEM.instr !== 32'h00000073 && cycles < MAX_CYCLES) begin
             @(posedge clk);
             cycles += 1;
         end
 
-        // tests/alu_ops.s 
-        check_reg(0, 32'h00000000); //x0 should be tied to 0
-        check_reg(1, 32'h00000005); //addi x1, x0, 5
-        check_reg(2, 32'hFFFFFFFD); //addi x2, x0, -3
-        check_reg(3, 32'h00000002); //add  x3, x1, x2
-        check_reg(4, 32'h00000008); //sub  x4, x1, x2
-        check_reg(5, 32'h00000001); //slt  x5, x2, x1 (this is 1 because x2 < x1)
-        check_reg(6, 32'h00000000); //sltu x6, x2, x1 (0 since unsigned, sign doesnt matter)
-        check_reg(7, 32'hFFFFFFFE); //srai x7, x2, 1 (x2 >> 1)
-        check_reg(8, 32'h0000000F); //srli x8, x2, 28 (x2 >> 28)
-        check_reg(9, 32'h000000FA); //xori x9, x1, 0xff
-        check_reg(10, 32'h00000050); //slli x10, x1, 4
-
-        if (errors >= 1) begin
-            $display("FAILED, errors=%0d, cycles=%0d", errors, cycles);
+        gp = CPU_TOP.REGFILE.regs[3];
+        if (cycles >= MAX_CYCLES) begin
+            $display("FAIL %s: timeout after %0d cycles, pc=%h", test, cycles, CPU_TOP.pc);
+        end else if (gp === 32'd1) begin
+            $display("PASS %s: cycles=%0d", test, cycles);
         end else begin
-            $display("PASSED, cycles=%0d", cycles);
+            $display("FAIL %s: test case %0d failed (gp=%h), pc=%h, cycles=%0d", test, gp >> 1, gp, CPU_TOP.pc, cycles);
         end
 
         $finish;

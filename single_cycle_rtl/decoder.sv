@@ -10,6 +10,7 @@ module decoder
     output [6:0] funct7,
     output logic reg_write,
     output logic jump,
+    output logic branch,
     output logic mem_load,
     output logic mem_write,
     output logic [2:0] imm_sel,
@@ -38,6 +39,7 @@ module decoder
         jump = 1'b0;
         mem_write = 1'b0;
         mem_load = 1'b0;
+        branch = 1'b0;
 
         case (opcode) 
             7'b0110011: begin //R-type
@@ -101,7 +103,7 @@ module decoder
                 alu_src_a = 1'b1; //uses rs1
                 alu_src_b = 1'b0; //set to imm
                 alu_op = 4'b1011; // (rs1 + imm) & ~1
-                jump = 1'b1; //jump so rd gets pc + 4 (next_pc)
+                jump = 1'b1; //jump so rd gets pc + 4 (next_pc) - this is to have the return address saved for writeback
             end
             7'b0100011: begin // SW - rs2, rs1, imm (rs1+imm is the address) (rs2 is the data)
                 reg_write = 1'b0; //disable reg write
@@ -119,6 +121,14 @@ module decoder
                 alu_op = 4'b0000; //add
                 mem_load = 1'b1;
             end
+            7'b1100011: begin // branches
+                reg_write = 1'b0;
+                imm_sel = IMM_B;
+                alu_src_a = 1'b0; //uses pc
+                alu_src_b = 1'b0; //uses imm
+                alu_op = 4'b0000; //add
+                branch = 1'b1;
+            end
             default: begin //at default, dont write it to a register
                 reg_write = 1'b0; //disable reg write
                 imm_sel = IMM_I;
@@ -128,6 +138,7 @@ module decoder
                 jump = 1'b0;
                 mem_write = 1'b0;
                 mem_load = 1'b0;
+                branch = 1'b0;
             end
         endcase
     end
