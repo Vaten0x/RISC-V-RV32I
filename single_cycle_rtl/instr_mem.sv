@@ -15,6 +15,13 @@ module instr_mem(
 
         we wanna just remove the last two bits and use it to index it
 
+        dropping the last two bits does the same effect as dividing by 4
+
+        byte address 0  -> word 0
+        byte address 4  -> word 1
+        byte address 8  -> word 2
+        byte address 12 -> word 3
+
         instr[31:0] = INSTR_RAM[addr[11:2]]
     */
 

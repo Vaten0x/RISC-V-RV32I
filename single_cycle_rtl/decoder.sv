@@ -10,6 +10,7 @@ module decoder
     output [6:0] funct7,
     output logic reg_write,
     output logic jump,
+    output logic mem_write,
     output logic [2:0] imm_sel,
     output logic alu_src_a, //1 means using rs1
     output logic alu_src_b, //1 means using rs2
@@ -34,13 +35,12 @@ module decoder
         alu_src_b = 1'b0;
         alu_op = 4'b0000;
         jump = 1'b0;
+        mem_write = 1'b0;
 
         case (opcode) 
             7'b0110011: begin //R-type
-                reg_write = 1'b1;
                 alu_src_a = 1'b1;
-                alu_src_b = 1'b1; //register
-                jump = 1'b0;
+                alu_src_b = 1'b1;
 
                 if (funct3 == 3'b000 && ~instr[30]) alu_op = 4'b0000; //add
                 else if (funct3 == 3'b000 && instr[30]) alu_op = 4'b0001; //sub
@@ -54,11 +54,9 @@ module decoder
                 else if (funct3 == 3'b111) alu_op = 4'b1001; //and
             end
             7'b0010011: begin //R-type with immediate
-                reg_write = 1'b1;
                 imm_sel = IMM_I;
                 alu_src_a = 1'b1;
                 alu_src_b = 1'b0; //immediate
-                jump = 1'b0;
 
                 if (funct3 == 3'b000) alu_op = 4'b0000; //addi
                 // no subi
@@ -72,23 +70,18 @@ module decoder
                 else if (funct3 == 3'b111) alu_op = 4'b1001; //andi
             end
             7'b0110111: begin //U-type LUI - puts imm straight to rd using alu_op 1010
-                reg_write = 1'b1;
                 imm_sel = IMM_U;
                 alu_src_a = 1'b0; //not using rs1
                 alu_src_b = 1'b0; //not using rs2
                 alu_op = 4'b1010; // return b operand
-                jump = 1'b0;
             end
             7'b0010111: begin //U-type AUIPC - adds pc + imm to rd
-                reg_write = 1'b1;
                 imm_sel = IMM_U;
                 alu_src_a = 1'b0; //set to pc
                 alu_src_b = 1'b0; //set to imm
                 alu_op = 4'b0000; //add
-                jump = 1'b0;
             end
             7'b1101111: begin //J-type JAL - rd,imm: rd <- pc + 4, then pc <- pc + imm
-                reg_write = 1'b1;
                 imm_sel = IMM_J;
                 alu_src_a = 1'b0; //set to pc
                 alu_src_b = 1'b0; //set to imm
@@ -96,27 +89,27 @@ module decoder
                 jump = 1'b1; //jump so pc can take pc + imm value and rd gets pc + 4 (next_pc) to save the return address
             end
             7'b1100111: begin //I-type JALR - rd, rs1, imm - used to return to that jal's saved address (x1)
-                reg_write = 1'b1;
                 imm_sel = IMM_I;
                 alu_src_a = 1'b1; //uses rs1
                 alu_src_b = 1'b0; //set to imm
                 alu_op = 4'b1011; // (rs1 + imm) & ~1
                 jump = 1'b1; //jump so rd gets pc + 4 (next_pc)
             end
-            7'b0100011: //S-types
-                if (funct3 == 3'b000) begin //SB
-                    reg_write = 1'b0; //you are storing so no need for this
-                    imm_sel = IMM_S;
+            7'b0100011: begin //S-types - SB, SH, SW
+                reg_write = 1'b0;
+                imm_sel = IMM_S;
+                alu_src_a = 1'b1; //uses rs1
+                alu_src_b = 1'b0; //uses imm
+                alu_op = 4'b0000; //add
+                mem_write = 1'b1;
+                if (funct3 == 3'b000) begin //SB rs1, rs2, imm (rs1 + imm is the address) (rs2 is the data)
+                    
+                end else if (funct3 == 3'b001) begin //SH rs1, rs2, imm
 
-                end else if (funct3 == 3'b001) begin //SH
-                    reg_write = 1'b0; //you are storing so no need for this
-                    imm_sel = IMM_S;
-
-                end else if (funct3 == 3'b010) begin //SW
-                    reg_write = 1'b0; //you are storing so no need for this
-                    imm_sel = IMM_S;
+                end else if (funct3 == 3'b010) begin //SW rs1, rs2, imm
 
                 end
+            end 
             default: begin //at default, dont write it to a register
                 reg_write = 1'b0; //disable reg write
                 imm_sel = IMM_I;
@@ -124,6 +117,7 @@ module decoder
                 alu_src_b = 1'b0;
                 alu_op = 4'b0000;
                 jump = 1'b0;
+                mem_write = 1'b0;
             end
         endcase
     end

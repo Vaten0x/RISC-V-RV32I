@@ -29,6 +29,10 @@ module cpu_top
 
     logic [31:0] imm;
 
+    // For data_mem components
+    logic mem_write; //(write_en for DATA_MEM)
+    logic [31:0] read_data;
+
     pc PC(
         .clk(clk),
         .rst_n(rst_n),
@@ -51,6 +55,7 @@ module cpu_top
         .funct7(funct7),
         .reg_write(reg_write),
         .jump(jump),
+        .mem_write(mem_write),
         .imm_sel(imm_sel),
         .alu_src_a(alu_src_a),
         .alu_src_b(alu_src_b),
@@ -59,10 +64,12 @@ module cpu_top
 
     data_mem DATA_MEM(
         .clk(clk),
-        .write_en(reg_write),
-        .address(),
-        .data()
-    )
+        .rst_n(rst_n),
+        .write_en(mem_write),
+        .address(ALU_result),
+        .write_data(rd2),
+        .read_data(read_data)
+    );
 
     regfile REGFILE(
         .clk(clk),
