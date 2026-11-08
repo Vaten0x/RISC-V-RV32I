@@ -1,0 +1,123 @@
+module cpu_top
+    import rv32i_pkg::*;
+(
+    input logic clk,
+    input logic rst_n
+);
+
+    logic [31:0] instr;
+
+    //instruction components
+    logic [6:0] opcode;
+    logic [4:0] rd;
+    logic [4:0] rs1, rs2;
+    logic [2:0] funct3;
+    logic [6:0] funct7;
+    logic reg_write;
+    logic jump;
+    logic [2:0] imm_sel;
+    logic alu_src_a; //1 means using rs1
+    logic alu_src_b; //1 means using rs2
+    logic [3:0] alu_op;
+    logic [31:0] rd1, rd2;
+    logic [31:0] ALU_result;
+
+    // For program counter
+    logic [31:0] pc;
+    logic [31:0] next_pc;
+    assign next_pc = pc + 32'h4;
+
+    logic [31:0] imm;
+    logic [31:0] mux_out;
+
+    // For data_mem components
+    logic mem_load;
+    logic mem_write; //write_en for DATA_MEM
+    logic [31:0] read_data;
+
+    // For branch
+    logic branch; //decoder finds the instr to be a B type command
+    logic take_branch; //branch_decoder says to take the branch
+
+    pc PC(
+        .clk(clk),
+        .rst_n(rst_n),
+        .next_pc(jump || (branch && take_branch) ? ALU_result : next_pc),
+        .pc(pc)
+    );
+
+    instr_mem INSTR_MEM(
+        .addr(pc),
+        .instr(instr)
+    );
+
+    decoder DECODER(
+        .instr(instr),
+        .opcode(opcode),
+        .rd(rd),
+        .rs1(rs1),
+        .rs2(rs2),
+        .funct3(funct3),
+        .funct7(funct7),
+        .reg_write(reg_write),
+        .jump(jump),
+        .branch(branch),
+        .mem_load(mem_load),
+        .mem_write(mem_write),
+        .imm_sel(imm_sel),
+        .alu_src_a(alu_src_a),
+        .alu_src_b(alu_src_b),
+        .alu_op(alu_op)
+    );
+
+    branch_decoder BRANCH_DECODER(
+        .rd1(rd1),
+        .rd2(rd2),
+        .funct3(funct3),
+        .take_branch(take_branch)
+    );
+
+    data_mem DATA_MEM(
+        .clk(clk),
+        .rst_n(rst_n),
+        .write_en(mem_write),
+        .address(ALU_result),
+        .write_data(rd2),
+        .read_data(read_data)
+    );
+
+    regfile REGFILE(
+        .clk(clk),
+        .rst_n(rst_n),
+        .reg_write(reg_write),
+        .rs1(rs1),
+        .rs2(rs2),
+        .write_addr(rd),
+        .write_data(mux_out),
+        .rd1(rd1),
+        .rd2(rd2)
+    );
+
+    mux4to1 MUX4TO1(
+        .sel({jump, mem_load}),
+        .input1(next_pc),
+        .input2(read_data),
+        .input3(ALU_result),
+        .input4(32'd0),
+        .mux_out(mux_out)
+    );
+
+    alu ALU(
+        .a(alu_src_a ? rd1 : pc),
+        .b(alu_src_b ? rd2 : imm),
+        .alu_op(alu_op),
+        .result(ALU_result)
+    );
+
+    imm_gen IMM_GEN(
+        .inst(instr),
+        .imm_sel(imm_sel),
+        .imm(imm)
+    );
+
+endmodule
