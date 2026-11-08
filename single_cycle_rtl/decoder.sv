@@ -102,13 +102,6 @@ module decoder
                 alu_src_b = 1'b0; //uses imm
                 alu_op = 4'b0000; //add
                 mem_write = 1'b1;
-                if (funct3 == 3'b000) begin //SB rs1, rs2, imm (rs1 + imm is the address) (rs2 is the data)
-                    
-                end else if (funct3 == 3'b001) begin //SH rs1, rs2, imm
-
-                end else if (funct3 == 3'b010) begin //SW rs1, rs2, imm
-
-                end
             end 
             default: begin //at default, dont write it to a register
                 reg_write = 1'b0; //disable reg write

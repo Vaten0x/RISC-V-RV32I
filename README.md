@@ -74,7 +74,7 @@ Loads (I-type):
 Stores (S-type):
 - [ ] sb
 - [ ] sh
-- [ ] sw
+- [x] sw
 
 Branches (B-type):
 - [ ] beq
@@ -85,9 +85,9 @@ Branches (B-type):
 - [ ] bgeu
 
 Jumps:
-- [ ] jal (J-type)
-- [ ] jalr (I-type)
+- [x] jal (J-type)
+- [x] jalr (I-type)
 
 Upper immediate (U-type):
-- [ ] lui
-- [ ] auipc
+- [x] lui
+- [x] auipc
