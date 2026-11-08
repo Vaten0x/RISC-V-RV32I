@@ -28,9 +28,11 @@ module cpu_top
     assign next_pc = pc + 32'h4;
 
     logic [31:0] imm;
+    logic [31:0] mux_out;
 
     // For data_mem components
-    logic mem_write; //(write_en for DATA_MEM)
+    logic mem_load;
+    logic mem_write; //write_en for DATA_MEM
     logic [31:0] read_data;
 
     pc PC(
@@ -55,6 +57,7 @@ module cpu_top
         .funct7(funct7),
         .reg_write(reg_write),
         .jump(jump),
+        .mem_load(mem_load),
         .mem_write(mem_write),
         .imm_sel(imm_sel),
         .alu_src_a(alu_src_a),
@@ -78,10 +81,19 @@ module cpu_top
         .rs1(rs1),
         .rs2(rs2),
         .write_addr(rd),
-        .write_data(jump ? next_pc : ALU_result),
+        .write_data(mux_out), //TODO: need 2sel mux here with jump + mem_load
         .rd1(rd1),
         .rd2(rd2)
     );
+
+    mux4to1 MUX4TO1(
+        .sel({jump, mem_load}),
+        .input1(next_pc),
+        .input2(read_data),
+        .input3(ALU_result),
+        .input4(32'd0),
+        .mux_out(mux_out)
+    )
 
     alu ALU(
         .a(alu_src_a ? rd1 : pc),
