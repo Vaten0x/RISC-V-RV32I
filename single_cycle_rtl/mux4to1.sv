@@ -4,12 +4,10 @@ module mux4to1(
     output logic [31:0] mux_out
 );
 
-    //sel is {jump, mem_load}
-
     always_comb begin
         case(sel)
-            2'b1x: mux_out = input1;
-            2'bx1: mux_out = input2;
+            2'b10: mux_out = input1;
+            2'b01: mux_out = input2;
             2'b00: mux_out = input3;
             default mux_out = input4; //input 4 is just 32'd0
         endcase

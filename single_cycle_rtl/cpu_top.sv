@@ -81,7 +81,7 @@ module cpu_top
         .rs1(rs1),
         .rs2(rs2),
         .write_addr(rd),
-        .write_data(mux_out), //TODO: need 2sel mux here with jump + mem_load
+        .write_data(mux_out),
         .rd1(rd1),
         .rd2(rd2)
     );
@@ -93,7 +93,7 @@ module cpu_top
         .input3(ALU_result),
         .input4(32'd0),
         .mux_out(mux_out)
-    )
+    );
 
     alu ALU(
         .a(alu_src_a ? rd1 : pc),
