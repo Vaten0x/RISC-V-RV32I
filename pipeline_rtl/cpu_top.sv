@@ -44,9 +44,6 @@ module cpu_top
     logic branch; //decoder finds the instr to be a B type command
     logic take_branch; //branch_decoder says to take the branch
 
-    // For pipeline valid bit
-    logic valid;
-
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             IF_ID_regs <= '0;
