@@ -5,6 +5,11 @@ module cpu_top
     input logic rst_n
 );
 
+    IF_ID_t IF_ID_regs;
+    ID_EX_t ID_EX_regs;
+    EX_MEM_t EX_MEM_regs;
+    MEM_WB_t MEM_WB_regs;
+
     logic [31:0] instr;
 
     //instruction components
@@ -39,10 +44,76 @@ module cpu_top
     logic branch; //decoder finds the instr to be a B type command
     logic take_branch; //branch_decoder says to take the branch
 
+    // For pipeline valid bit
+    logic valid;
+
+    always_ff @(posedge clk) begin
+        if (~rst_n) begin
+            IF_ID_regs <= '0;
+        end else begin
+            IF_ID_regs.pc <= pc;
+            IF_ID_regs.next_pc <= next_pc;
+            IF_ID_regs.instr <= instr;
+        end
+    end
+
+    always_ff @(posedge clk) begin
+        if (~rst_n) begin
+            ID_EX_regs <= '0;
+        end else begin
+            ID_EX_regs.next_pc <= IF_ID_regs.next_pc;
+            ID_EX_regs.pc <= IF_ID_regs.pc;
+            ID_EX_regs.branch <= branch;
+            ID_EX_regs.jump <= jump;
+            ID_EX_regs.alu_op <= alu_op;
+            ID_EX_regs.funct3 <= funct3;
+            ID_EX_regs.imm <= imm;
+            ID_EX_regs.alu_src_a <= alu_src_a;
+            ID_EX_regs.alu_src_b <= alu_src_b;
+            ID_EX_regs.rd1 <= rd1;
+            ID_EX_regs.rd2 <= rd2;
+            ID_EX_regs.mem_write <= mem_write;
+            ID_EX_regs.mem_load <= mem_load;
+            ID_EX_regs.reg_write <= reg_write;
+            ID_EX_regs.rd <= rd;
+        end
+    end
+
+    always_ff @(posedge clk) begin
+        if (~rst_n) begin
+            EX_MEM_regs <= '0;
+        end else begin
+            EX_MEM_regs.next_pc <= ID_EX_regs.next_pc;
+            EX_MEM_regs.jump <= ID_EX_regs.jump;
+            EX_MEM_regs.rd2 <= ID_EX_regs.rd2;
+            EX_MEM_regs.mem_write <= ID_EX_regs.mem_write;
+            EX_MEM_regs.ALU_result <= ALU_result;
+            EX_MEM_regs.mem_load <= ID_EX_regs.mem_load;
+            EX_MEM_regs.reg_write <= ID_EX_regs.reg_write;
+            EX_MEM_regs.rd <= ID_EX_regs.rd;
+        end
+    end
+
+    always_ff @(posedge clk) begin
+        if (~rst_n) begin
+            MEM_WB_regs <= '0;
+        end else begin
+            MEM_WB_regs.next_pc <= EX_MEM_regs.next_pc;
+            MEM_WB_regs.jump <= EX_MEM_regs.jump;
+            MEM_WB_regs.ALU_result <= EX_MEM_regs.ALU_result;
+            MEM_WB_regs.read_data <= read_data;
+            MEM_WB_regs.mem_load <= EX_MEM_regs.mem_load;
+            MEM_WB_regs.reg_write <= EX_MEM_regs.reg_write;
+            MEM_WB_regs.rd <= EX_MEM_regs.rd;
+        end
+    end
+
+    // IF - Instruction Fetch Stage
+
     pc PC(
         .clk(clk),
         .rst_n(rst_n),
-        .next_pc(jump || (branch && take_branch) ? ALU_result : next_pc),
+        .next_pc(ID_EX_regs.jump || (ID_EX_regs.branch && take_branch) ? ALU_result : next_pc), //TODO: figure out stalling
         .pc(pc)
     );
 
@@ -51,8 +122,16 @@ module cpu_top
         .instr(instr)
     );
 
+    // ID - Instruction Decode Stage
+
+    imm_gen IMM_GEN(
+        .instr(IF_ID_regs.instr),
+        .imm_sel(imm_sel),
+        .imm(imm)
+    );
+
     decoder DECODER(
-        .instr(instr),
+        .instr(IF_ID_regs.instr),
         .opcode(opcode),
         .rd(rd),
         .rs1(rs1),
@@ -70,54 +149,54 @@ module cpu_top
         .alu_op(alu_op)
     );
 
+    // EX - Execute Stage
+
+    alu ALU(
+        .a(ID_EX_regs.alu_src_a ? ID_EX_regs.rd1 : ID_EX_regs.pc),
+        .b(ID_EX_regs.alu_src_b ? ID_EX_regs.rd2 : ID_EX_regs.imm),
+        .alu_op(ID_EX_regs.alu_op),
+        .result(ALU_result)
+    );
+
     branch_decoder BRANCH_DECODER(
-        .rd1(rd1),
-        .rd2(rd2),
-        .funct3(funct3),
+        .rd1(ID_EX_regs.rd1),
+        .rd2(ID_EX_regs.rd2),
+        .funct3(ID_EX_regs.funct3),
         .take_branch(take_branch)
     );
+
+    // MEM - Memory Stage
 
     data_mem DATA_MEM(
         .clk(clk),
         .rst_n(rst_n),
-        .write_en(mem_write),
-        .address(ALU_result),
-        .write_data(rd2),
+        .write_en(EX_MEM_regs.mem_write),
+        .address(EX_MEM_regs.ALU_result),
+        .write_data(EX_MEM_regs.rd2),
         .read_data(read_data)
     );
+
+    // WB - Writeback Stage, the rs1, rs2, rd1, rd2 are used by the instruction in ID stage
 
     regfile REGFILE(
         .clk(clk),
         .rst_n(rst_n),
-        .reg_write(reg_write),
+        .reg_write(MEM_WB_regs.reg_write),
         .rs1(rs1),
         .rs2(rs2),
-        .write_addr(rd),
+        .write_addr(MEM_WB_regs.rd),
         .write_data(mux_out),
         .rd1(rd1),
         .rd2(rd2)
     );
 
     mux4to1 MUX4TO1(
-        .sel({jump, mem_load}),
-        .input1(next_pc),
-        .input2(read_data),
-        .input3(ALU_result),
+        .sel({MEM_WB_regs.jump, MEM_WB_regs.mem_load}),
+        .input1(MEM_WB_regs.next_pc),
+        .input2(MEM_WB_regs.read_data),
+        .input3(MEM_WB_regs.ALU_result),
         .input4(32'd0),
         .mux_out(mux_out)
-    );
-
-    alu ALU(
-        .a(alu_src_a ? rd1 : pc),
-        .b(alu_src_b ? rd2 : imm),
-        .alu_op(alu_op),
-        .result(ALU_result)
-    );
-
-    imm_gen IMM_GEN(
-        .inst(instr),
-        .imm_sel(imm_sel),
-        .imm(imm)
     );
 
 endmodule

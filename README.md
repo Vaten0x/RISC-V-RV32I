@@ -103,3 +103,9 @@ Jumps:
 Upper immediate (U-type):
 - [x] lui
 - [x] auipc
+
+# Pipeline design notes
+
+![Pipeline notes 1](pipeline1.jpg)
+![Pipeline notes 2](pipeline2.jpg)
+![Pipeline notes 3](pipeline3.jpg)

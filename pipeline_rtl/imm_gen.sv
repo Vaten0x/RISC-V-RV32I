@@ -1,7 +1,7 @@
 module imm_gen 
     import rv32i_pkg::*;
 (
-    input logic [31:0] inst,
+    input logic [31:0] instr,
     input logic [2:0] imm_sel,
     output logic [31:0] imm
 );

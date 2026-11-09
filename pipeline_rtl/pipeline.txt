@@ -1,0 +1,44 @@
+IF/ID:
+
+pc
+next_pc
+instr
+
+ID/EX:
+
+next_pc
+pc
+branch
+jump
+alu_op
+funct3
+imm
+alu_src_a
+alu_src_b
+rd1
+rd2
+mem_write
+mem_load
+reg_write
+write_addr - rd actually
+
+EX/MEM:
+
+next_pc
+jump
+rd2
+mem_write
+ALU_result
+mem_load
+reg_write
+write_addr - rd actually
+
+MEM/WB:
+
+next_pc
+jump
+ALU_result
+read_data
+mem_load
+reg_write
+write_addr - rd actually
