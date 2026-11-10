@@ -187,6 +187,12 @@ module cpu_top
         .rd2(rd2)
     );
 
+    /*
+        If jump=1, we write next_pc
+        If mem_load=1, we write read_data
+        both 0, we write ALU_result
+        otherwise just write 32'd0
+    */
     mux4to1 MUX4TO1(
         .sel({MEM_WB_regs.jump, MEM_WB_regs.mem_load}),
         .input1(MEM_WB_regs.next_pc),

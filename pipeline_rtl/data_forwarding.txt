@@ -1,0 +1,50 @@
+3 forwarding to be done:
+
+1. one from WB to ID - 3 cycles behind:
+
+because the read at ID is combinational if you see the regfile.sv (always_comb)
+that's why we need to port this straight to the ID/EX stage because the new value for rd will be written at the 
+end of the stage of WB same as the execute one. That's why we must bypass from WB to ID before the clk rise of the stage
+
+2. one from MEM/WB to EX - 2 cycles behind:
+
+this one we make a mux to forward it
+
+addess is MEM_WB_regs.rd
+the value is MEM_WB_regs.ALU_result
+
+so we compare whether either rs1 or rs2 is the same as the address
+
+and if it is, we use the mux to replace:
+Either or both:
+ID_EX_regs.rd1
+ID_EX_regs.rd2
+
+for the address that is the same 
+
+if it is? we forward the new value 
+if not we keep the same thing
+
+two problem though:
+
+1. LW command:
+
+For this one to forward, you use the read_data because the 
+ALU_result was the address to get the result from DATA_MEM
+
+for this one we just need another mux
+
+2. JAL, JALR
+
+same thing as above, just one more bit for the mux to handle this case 
+since this one writes next_pc
+
+I can just use the MUX4TO1 for this, i just use mux_out
+
+3. and another one from EX/MEM to EX - 1 cycle behind:
+
+
+
+
+
+
