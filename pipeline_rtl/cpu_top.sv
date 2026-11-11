@@ -44,6 +44,11 @@ module cpu_top
     logic branch; //decoder finds the instr to be a B type command
     logic take_branch; //branch_decoder says to take the branch
 
+    // For data forwarding
+    logic [31:0] forwarded_rd1;
+    logic [31:0] forwarded_rd2;
+
+    // IF/ID
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             IF_ID_regs <= '0;
@@ -54,6 +59,7 @@ module cpu_top
         end
     end
 
+    // ID/EX
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             ID_EX_regs <= '0;
@@ -67,6 +73,8 @@ module cpu_top
             ID_EX_regs.imm <= imm;
             ID_EX_regs.alu_src_a <= alu_src_a;
             ID_EX_regs.alu_src_b <= alu_src_b;
+            ID_EX_regs.rs1 <= rs1;
+            ID_EX_regs.rs2 <= rs2;
             ID_EX_regs.rd1 <= rd1;
             ID_EX_regs.rd2 <= rd2;
             ID_EX_regs.mem_write <= mem_write;
@@ -76,13 +84,14 @@ module cpu_top
         end
     end
 
+    // EX/MEM
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             EX_MEM_regs <= '0;
         end else begin
             EX_MEM_regs.next_pc <= ID_EX_regs.next_pc;
             EX_MEM_regs.jump <= ID_EX_regs.jump;
-            EX_MEM_regs.rd2 <= ID_EX_regs.rd2;
+            EX_MEM_regs.rd2 <= forwarded_rd2;
             EX_MEM_regs.mem_write <= ID_EX_regs.mem_write;
             EX_MEM_regs.ALU_result <= ALU_result;
             EX_MEM_regs.mem_load <= ID_EX_regs.mem_load;
@@ -91,6 +100,20 @@ module cpu_top
         end
     end
 
+    // data forward MEM/WB to EX
+    always_comb begin
+        if (MEM_WB_regs.reg_write == 1'b1 && MEM_WB_regs.rd != 5'd0) begin
+            if (MEM_WB_regs.rd == ID_EX_regs.rs1) forwarded_rd1 = mux_out;
+            else forwarded_rd1 = ID_EX_regs.rd1;
+            if (MEM_WB_regs.rd == ID_EX_regs.rs2) forwarded_rd2 = mux_out;
+            else forwarded_rd2 = ID_EX_regs.rd2;
+        end else begin
+            forwarded_rd1 = ID_EX_regs.rd1;
+            forwarded_rd2 = ID_EX_regs.rd2;
+        end
+    end
+
+    // MEM/WB
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             MEM_WB_regs <= '0;
@@ -149,15 +172,15 @@ module cpu_top
     // EX - Execute Stage
 
     alu ALU(
-        .a(ID_EX_regs.alu_src_a ? ID_EX_regs.rd1 : ID_EX_regs.pc),
-        .b(ID_EX_regs.alu_src_b ? ID_EX_regs.rd2 : ID_EX_regs.imm),
+        .a(ID_EX_regs.alu_src_a ? forwarded_rd1 : ID_EX_regs.pc),
+        .b(ID_EX_regs.alu_src_b ? forwarded_rd2 : ID_EX_regs.imm),
         .alu_op(ID_EX_regs.alu_op),
         .result(ALU_result)
     );
 
     branch_decoder BRANCH_DECODER(
-        .rd1(ID_EX_regs.rd1),
-        .rd2(ID_EX_regs.rd2),
+        .rd1(forwarded_rd1),
+        .rd2(forwarded_rd2),
         .funct3(ID_EX_regs.funct3),
         .take_branch(take_branch)
     );

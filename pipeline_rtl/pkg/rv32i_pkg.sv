@@ -25,6 +25,8 @@ package rv32i_pkg;
         logic [31:0] imm;
         logic alu_src_a;
         logic alu_src_b;
+        logic [4:0] rs1;
+        logic [4:0] rs2;
         logic [31:0] rd1;
         logic [31:0] rd2;
         logic mem_write;

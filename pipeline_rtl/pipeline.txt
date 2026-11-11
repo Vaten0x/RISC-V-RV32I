@@ -22,6 +22,10 @@ mem_load
 reg_write
 write_addr - rd actually
 
+//added for data forwarding
+rs1
+rs2
+
 EX/MEM:
 
 next_pc
