@@ -15,29 +15,29 @@ module imm_gen
     always_comb begin
         case (imm_sel)
             IMM_I: begin
-                imm[11:0] = inst[31:20];
-                imm[31:12] = {20{inst[31]}};
+                imm[11:0] = instr[31:20];
+                imm[31:12] = {20{instr[31]}};
             end
             IMM_S: begin
-                imm[11:0] = { inst[31:25], inst[11:7] };
-                imm[31:12] = {20{inst[31]}};
+                imm[11:0] = { instr[31:25], instr[11:7] };
+                imm[31:12] = {20{instr[31]}};
             end
             IMM_B: begin
                 imm[0] = 1'd0;
-                imm[10:1] = { inst[30:25], inst[11:8] };
-                imm[11] = inst[7];
-                imm[31:12] = {20{inst[31]}};
+                imm[10:1] = { instr[30:25], instr[11:8] };
+                imm[11] = instr[7];
+                imm[31:12] = {20{instr[31]}};
             end
             IMM_U: begin
                 imm[11:0] = 12'd0;
-                imm[31:12] = inst[31:12];
+                imm[31:12] = instr[31:12];
             end
             IMM_J: begin
                 imm[0] = 1'd0;
-                imm[10:1] = inst[30:21];
-                imm[11] = inst[20];
-                imm[19:12] = inst[19:12];
-                imm[31:20] = {12{inst[31]}};
+                imm[10:1] = instr[30:21];
+                imm[11] = instr[20];
+                imm[19:12] = instr[19:12];
+                imm[31:20] = {12{instr[31]}};
             end
             default: imm = 32'd0;
         endcase
