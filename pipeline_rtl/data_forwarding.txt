@@ -7,13 +7,13 @@ c -  or  ..,x5     -    -    IF   ID   EX   MEM    (2 apart)
 d -  and ..,x5     -    -    -    IF   ID   EX     (3 apart)
 
 MEM/WB to ID:
-this does forwarding from `5a` output to `5d` before clk
+this does forwarding from `5a` output to `5d` before clk (forwarding writing value to regs at WB to read for rd1/rd2 at ID)
 
 MEM/WB to EX:
-this does forwarding from `5a` output to `5c` before clk
+this does forwarding from `5a` output to `5c` before clk (forwarding writing value to regs at WB to rd1/rd2 so it executes properly before EX)
 
 EX/MEM to EX:
-this does forwarding from `4a` read_data to `4b`
+this does forwarding from `4a` output to `4b` (forwarding ALU_result value to rd1/rd2 so it executes properly before EX)
 
 1. one from WB to ID - 3 cycles behind:
 
@@ -58,6 +58,20 @@ I can just use the MUX4TO1 for this, i just use mux_out
 
 3. and another one from EX/MEM to EX - 1 cycle behind:
 
+straight from ALU_result that one instr just finished computing so the next instr
+can use that result if the address matches so it doesnt use the stale one
+this one is a simple one
+
+but i need to think of the priorit of EX/MEM to EX and MEM/WB to EX 
+
+since it needs to use one or the other since it writes over on the same EX if the address is same 
+
+like:
+add x5, ...    (a)
+add x5, ...    (b)
+sub x7, x5, x5 (c)
+
+then it needs to use the (b) which is the one im trying to implement of EX/MEM
 
 
 

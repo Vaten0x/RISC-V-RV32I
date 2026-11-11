@@ -44,7 +44,7 @@ module cpu_top
     logic branch; //decoder finds the instr to be a B type command
     logic take_branch; //branch_decoder says to take the branch
 
-    // For data forwarding
+    // For data forwarding - MEM/WB to EX & EX/MEM to EX
     logic [31:0] forwarded_rd1;
     logic [31:0] forwarded_rd2;
 
@@ -100,17 +100,24 @@ module cpu_top
         end
     end
 
-    // data forward MEM/WB to EX
+    // Data forward MEM/WB to EX and EX/MEM to EX
+
+    //for rs1
     always_comb begin
-        if (MEM_WB_regs.reg_write == 1'b1 && MEM_WB_regs.rd != 5'd0) begin
-            if (MEM_WB_regs.rd == ID_EX_regs.rs1) forwarded_rd1 = mux_out;
-            else forwarded_rd1 = ID_EX_regs.rd1;
-            if (MEM_WB_regs.rd == ID_EX_regs.rs2) forwarded_rd2 = mux_out;
-            else forwarded_rd2 = ID_EX_regs.rd2;
-        end else begin
-            forwarded_rd1 = ID_EX_regs.rd1;
-            forwarded_rd2 = ID_EX_regs.rd2;
-        end
+        if (EX_MEM_regs.reg_write == 1'b1 && EX_MEM_regs.rd != 5'd0 && ID_EX_regs.rs1 == EX_MEM_regs.rd) begin // EX/MEM to EX has higher priority
+            forwarded_rd1 = EX_MEM_regs.ALU_result;
+        end else if (MEM_WB_regs.reg_write == 1'b1 && MEM_WB_regs.rd != 5'd0 && ID_EX_regs.rs1 == MEM_WB_regs.rd) begin // MEM/WB to EX
+            forwarded_rd1 = mux_out;
+        end else forwarded_rd1 = ID_EX_regs.rd1;
+    end
+
+    //for rs2
+    always_comb begin
+        if (EX_MEM_regs.reg_write == 1'b1 && EX_MEM_regs.rd != 5'd0 && ID_EX_regs.rs2 == EX_MEM_regs.rd) begin // EX/MEM to EX has higher priority
+            forwarded_rd2 = EX_MEM_regs.ALU_result;
+        end else if (MEM_WB_regs.reg_write == 1'b1 && MEM_WB_regs.rd != 5'd0 && ID_EX_regs.rs2 == MEM_WB_regs.rd) begin // MEM/WB to EX
+            forwarded_rd2 = mux_out;
+        end else forwarded_rd2 = ID_EX_regs.rd2;
     end
 
     // MEM/WB
@@ -133,7 +140,7 @@ module cpu_top
     pc PC(
         .clk(clk),
         .rst_n(rst_n),
-        .next_pc(ID_EX_regs.jump || (ID_EX_regs.branch && take_branch) ? ALU_result : next_pc), //TODO: figure out stalling
+        .next_pc(ID_EX_regs.jump || (ID_EX_regs.branch && take_branch) ? ALU_result : next_pc),
         .pc(pc)
     );
 
