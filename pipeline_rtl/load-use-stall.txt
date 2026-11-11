@@ -31,3 +31,12 @@ c -  NOP
 we stall before executing so we can get that MEM forwarding data into the EX at cycle 5 after stalling once.
 
 and the new instr needs to be a NOP, addi x0, x0, 0 
+
+we will detect with this combinational signal bit: load_use_hazard
+
+and it will need to be detected at cycle 3 because we need that stall
+
+we can use the ID_EX_regs.mem_load and check whether the ID_EX_regs.rd
+is the same as rs1 or rs2 (not the ID_EX_regs) for the ID stage for instr b as the example above
+
+plain names are from ID, the ones from ID_EX_regs are in EX stage

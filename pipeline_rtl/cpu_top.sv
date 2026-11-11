@@ -50,6 +50,8 @@ module cpu_top
 
     // For load-use hazard detection
     logic load_use_hazard;
+    // and for stalling in pc
+    logic stall;
 
     // IF/ID
     always_ff @(posedge clk) begin
@@ -105,7 +107,7 @@ module cpu_top
 
     // Data forward MEM/WB to EX and EX/MEM to EX
 
-    //for rs1
+    // - for rs1
     always_comb begin
         if (EX_MEM_regs.reg_write == 1'b1 && EX_MEM_regs.rd != 5'd0 && ID_EX_regs.rs1 == EX_MEM_regs.rd) begin // EX/MEM to EX has higher priority
             forwarded_rd1 = EX_MEM_regs.ALU_result;
@@ -114,13 +116,23 @@ module cpu_top
         end else forwarded_rd1 = ID_EX_regs.rd1;
     end
 
-    //for rs2
+    // - for rs2
     always_comb begin
         if (EX_MEM_regs.reg_write == 1'b1 && EX_MEM_regs.rd != 5'd0 && ID_EX_regs.rs2 == EX_MEM_regs.rd) begin // EX/MEM to EX has higher priority
             forwarded_rd2 = EX_MEM_regs.ALU_result;
         end else if (MEM_WB_regs.reg_write == 1'b1 && MEM_WB_regs.rd != 5'd0 && ID_EX_regs.rs2 == MEM_WB_regs.rd) begin // MEM/WB to EX
             forwarded_rd2 = mux_out;
         end else forwarded_rd2 = ID_EX_regs.rd2;
+    end
+
+    // Hazard detection - for load use stall
+
+    always_comb begin
+        if (ID_EX_regs.mem_load == 1'b1 && ID_EX_regs.rd != 5'd0 && rs1 == ID_EX_regs.rd) begin 
+            load_use_hazard = 1'b1; //for rs1
+        end else if (ID_EX_regs.mem_load == 1'b1 && ID_EX_regs.rd != 5'd0 && rs2 == ID_EX_regs.rd) begin
+            load_use_hazard = 1'b1; //for rs2
+        end else load_use_hazard = 1'b0;
     end
 
     // MEM/WB
@@ -143,6 +155,7 @@ module cpu_top
     pc PC(
         .clk(clk),
         .rst_n(rst_n),
+        .stall(stall),
         .next_pc(ID_EX_regs.jump || (ID_EX_regs.branch && take_branch) ? ALU_result : next_pc),
         .pc(pc)
     );
