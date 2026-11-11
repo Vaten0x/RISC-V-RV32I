@@ -22,11 +22,16 @@ and the ALU_result from the EX will be the address and it gets used at the WB st
 
 so the solution is this:
 
-     cycle:             1     2     3     4      5     6
-a -  lw   x14, 4(x13)   IF    ID    EX    MEM    WB 
-b -  addi x6, x14, 0    -     IF    ID    stall  EX    MEM   WB     (1 apart)
-c -  NOP
+     cycle:             1    2    3    4    5    6    7    8
+a -  lw   x14, 4(x13)   IF   ID   EX   MEM  WB
+b -  addi x6, x14, 0         IF   ID   ID   EX   MEM  WB
+c -  ...                          IF   IF   ID   EX   MEM  WB
+d -  ...                                    IF   ID   EX   MEM  WB
+     bubble                                 EX   MEM  WB
 
+    IF    ID   |   EX     MEM    WB
+    c     b    |  bubble   a     ...
+  (held) (held)|  (moves) (moves)
 
 we stall before executing so we can get that MEM forwarding data into the EX at cycle 5 after stalling once.
 
@@ -40,3 +45,9 @@ we can use the ID_EX_regs.mem_load and check whether the ID_EX_regs.rd
 is the same as rs1 or rs2 (not the ID_EX_regs) for the ID stage for instr b as the example above
 
 plain names are from ID, the ones from ID_EX_regs are in EX stage
+
+we need to make sure two things after detection:
+
+1. hold PC
+2. hold IF/ID
+3. ID/EX loads the bubble
