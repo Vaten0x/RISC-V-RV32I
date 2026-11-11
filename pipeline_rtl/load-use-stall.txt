@@ -1,0 +1,33 @@
+test 12 fails because of not implementing this
+
+PASS add: cycles=498
+FAIL lw: test case 12 failed (gp=00000019), pc=00000398, cycles=143
+FAIL sw: timeout after 10000 cycles, pc=000002e4
+
+lw   x14, 4(x13)
+addi x6, x14, 0     # uses x14 the very next instruction
+li   x7, 0x0ff00ff0
+bne  x6, x7, fail
+
+     cycle:             1     2     3     4      5     6
+a -  lw   x14, 4(x13)   IF    ID    EX    MEM    WB 
+b -  addi x6, x14, 0    -     IF    ID    EX     MEM   WB     (1 apart)
+
+the stall is needed for load write instr because
+
+when lw is the first instruction as in the example above, you can see that it 
+does x14 = DATA_MEM[x13 + 4]
+
+and the ALU_result from the EX will be the address and it gets used at the WB stage to get the read_data from the DATA_MEM
+
+so the solution is this:
+
+     cycle:             1     2     3     4      5     6
+a -  lw   x14, 4(x13)   IF    ID    EX    MEM    WB 
+b -  addi x6, x14, 0    -     IF    ID    stall  EX    MEM   WB     (1 apart)
+c -  NOP
+
+
+we stall before executing so we can get that MEM forwarding data into the EX at cycle 5 after stalling once.
+
+and the new instr needs to be a NOP, addi x0, x0, 0 

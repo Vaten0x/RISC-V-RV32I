@@ -48,6 +48,9 @@ module cpu_top
     logic [31:0] forwarded_rd1;
     logic [31:0] forwarded_rd2;
 
+    // For load-use hazard detection
+    logic load_use_hazard;
+
     // IF/ID
     always_ff @(posedge clk) begin
         if (~rst_n) begin
