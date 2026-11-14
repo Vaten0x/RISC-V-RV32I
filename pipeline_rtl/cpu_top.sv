@@ -51,10 +51,17 @@ module cpu_top
     // For load-use hazard detection, will need to stall
     logic load_use_hazard;
 
+    // For branch prediction
+    logic flush;
+
     // IF/ID
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             IF_ID_regs <= '0;
+        end else if (flush == 1'b1) begin // flush, clear it
+            IF_ID_regs.pc <= IF_ID_regs.pc;
+            IF_ID_regs.next_pc <= IF_ID_regs.next_pc;
+            IF_ID_regs.instr <= IF_ID_regs.instr;
         end else if (load_use_hazard == 1'b1) begin //hold IF if hazard detected
             IF_ID_regs.pc <= IF_ID_regs.pc;
             IF_ID_regs.next_pc <= IF_ID_regs.next_pc;
@@ -70,6 +77,24 @@ module cpu_top
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             ID_EX_regs <= '0;
+        end else if (flush == 1'b1) begin // flush, make it as a bubble that doesn't do anything
+            ID_EX_regs.next_pc <= ID_EX_regs.next_pc;
+            ID_EX_regs.pc <= ID_EX_regs.pc;
+            ID_EX_regs.branch <= 1'b0;
+            ID_EX_regs.jump <= 1'b0;
+            ID_EX_regs.alu_op <= 4'b0000;
+            ID_EX_regs.funct3 <= 3'b000;
+            ID_EX_regs.imm <= 32'd0;
+            ID_EX_regs.alu_src_a <= 1'b1;
+            ID_EX_regs.alu_src_b <= 1'b0; //use imm
+            ID_EX_regs.rs1 <= 5'd0;
+            ID_EX_regs.rs2 <= 5'd0;
+            ID_EX_regs.rd1 <= 32'd0;
+            ID_EX_regs.rd2 <= 32'd0;
+            ID_EX_regs.mem_write <= 1'b0;
+            ID_EX_regs.mem_load <= 1'b0;
+            ID_EX_regs.reg_write <= 1'b0;
+            ID_EX_regs.rd <= 5'd0;
         end else if (load_use_hazard == 1'b1) begin // hazard detected, this is the bubble we make that does nothing, same as NOP
             ID_EX_regs.next_pc <= ID_EX_regs.next_pc;
             ID_EX_regs.pc <= ID_EX_regs.pc;
@@ -88,7 +113,7 @@ module cpu_top
             ID_EX_regs.mem_load <= 1'b0;
             ID_EX_regs.reg_write <= 1'b0;
             ID_EX_regs.rd <= 5'd0;
-        end else begin
+        end begin
             ID_EX_regs.next_pc <= IF_ID_regs.next_pc;
             ID_EX_regs.pc <= IF_ID_regs.pc;
             ID_EX_regs.branch <= branch;
@@ -267,5 +292,8 @@ module cpu_top
         .input4(32'd0),
         .mux_out(mux_out)
     );
+
+    // Flush if branch is taken or jump
+    assign flush = ID_EX_regs.jump || (ID_EX_regs.branch && take_branch);
 
 endmodule

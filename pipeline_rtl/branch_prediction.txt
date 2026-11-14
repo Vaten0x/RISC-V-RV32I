@@ -1,0 +1,33 @@
+Branch predict not taken, flush when EX stage says taken
+
+and this is for control hazards unlike the RAW hazards that we solved by forwarding with the load-use stall
+
+we can try stalling for the branch but that is expensive. That's why we can predict the branch that is not taken which
+the current cpu does already so we just need the flush for misprediction
+
+this will be very bad performance on loops 
+because it doesn't have memory
+
+the wrong instructions will be replaced by bubbles
+
+With our current implementation, it will just execute stuff because its pipelined (two instr will go IF and ID because you know whether 
+to take branch is known at EX stage so two bad instr can occur)
+
+If the branch is not taken, sure it doesn't matter but if it is, then it takes two wrong instructions
+
+We clear the pipeline registers: IF/ID and ID/EX
+
+we can just do assign flush = ID_EX_regs.jump || (ID_EX_regs.branch && take_branch);
+
+     cycle:              1    2    3    4    5    6    7    8
+a -  beq  x1, x2, L      IF   ID   EX   MEM  WB
+b -  (0x04) wrong             IF   ID   X
+c -  (0x08) wrong                  IF   X
+t -  L: target                          IF   ID   EX   MEM  WB
+     bubble (was b)                     EX   MEM  WB
+     bubble (was c)                     ID   EX   MEM  WB
+
+  cycle 4:
+    IF       ID        EX        MEM     WB
+    t        bubble    bubble    a       ...
+  (target) (cleared) (cleared)  (moves) (moves)
