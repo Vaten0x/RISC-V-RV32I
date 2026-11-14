@@ -58,10 +58,10 @@ module cpu_top
     always_ff @(posedge clk) begin
         if (~rst_n) begin
             IF_ID_regs <= '0;
-        end else if (flush == 1'b1) begin // flush, clear it
+        end else if (flush == 1'b1) begin // flush, clear it, make the instr do nothing (bubble)
             IF_ID_regs.pc <= IF_ID_regs.pc;
             IF_ID_regs.next_pc <= IF_ID_regs.next_pc;
-            IF_ID_regs.instr <= IF_ID_regs.instr;
+            IF_ID_regs.instr <= 32'd0;
         end else if (load_use_hazard == 1'b1) begin //hold IF if hazard detected
             IF_ID_regs.pc <= IF_ID_regs.pc;
             IF_ID_regs.next_pc <= IF_ID_regs.next_pc;
@@ -113,7 +113,7 @@ module cpu_top
             ID_EX_regs.mem_load <= 1'b0;
             ID_EX_regs.reg_write <= 1'b0;
             ID_EX_regs.rd <= 5'd0;
-        end begin
+        end else begin
             ID_EX_regs.next_pc <= IF_ID_regs.next_pc;
             ID_EX_regs.pc <= IF_ID_regs.pc;
             ID_EX_regs.branch <= branch;
