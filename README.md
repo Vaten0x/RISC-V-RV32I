@@ -1,110 +1,52 @@
-# RISC-V-RV32I
+# RISC-V RV32I
 
-Using Vivado Simulator v2025.2 with Spike
+A 5-stage pipelined RV32I core in SystemVerilog, simulated with Vivado XSim 2025.2.
+
+## Status
+- [x] Single-cycle core (`single_cycle_rtl/`), used as the reference
+- [x] 5-stage pipeline: IF / ID / EX / MEM / WB (`pipeline_rtl/`)
+- [x] Data forwarding: EX/MEM -> EX, MEM/WB -> EX, WB -> ID (regfile bypass)
+- [x] Load-use hazard detection + 1-cycle stall
+- [x] Static predict not-taken, flush IF/ID and ID/EX on taken branch / jump
+- [ ] Dynamic branch prediction (BHT + BTB)
 
 ## Scope
-This project targets the unprivileged RV32I ISA only. Not planned:
-- Privileged features (CSRs, traps, interrupts)
+Unprivileged RV32I, minus:
+- CSRs, traps, interrupts
 - FENCE, ECALL, EBREAK
-- Byte/halfword loads and stores (LB, LH, LBU, LHU, SB, SH). Only LW/SW are supported.
+- Sub-word loads/stores (LB, LH, LBU, LHU, SB, SH). Only LW/SW.
 
-# To run cpu_top_tb test and open the sim
-xvlog -sv single_cycle_rtl/pkg/rv32i_pkg.sv single_cycle_rtl/alu.sv single_cycle_rtl/decoder.sv single_cycle_rtl/imm_gen.sv single_cycle_rtl/pc.sv single_cycle_rtl/instr_mem.sv single_cycle_rtl/regfile.sv single_cycle_rtl/data_mem.sv single_cycle_rtl/mux4to1.sv single_cycle_rtl/branch_decoder.sv single_cycle_rtl/cpu_top.sv tb/cpu_top_tb.sv
+Supported: all R-type, I-type ALU, LW, SW, all 6 branches, JAL, JALR, LUI, AUIPC.
 
+references:
+- [RISC-V Unprivileged ISA spec](https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html)
+- [RV32I instruction reference](https://www.cs.unh.edu/~pjh/courses/cs520/15spr/riscv-rv32i-instructions.pdf)
+
+## Testing
+32 tests from the official [riscv-tests](https://github.com/riscv-software-src/riscv-tests) rv32ui suite (sub-word tests excluded). PASS means `gp == 1` at the `ecall`.
+
+**Compile** (swap `pipeline_rtl` for `single_cycle_rtl` to run the single-cycle core):
+```
+xvlog -sv pipeline_rtl/pkg/rv32i_pkg.sv pipeline_rtl/alu.sv pipeline_rtl/decoder.sv pipeline_rtl/imm_gen.sv pipeline_rtl/pc.sv pipeline_rtl/instr_mem.sv pipeline_rtl/regfile.sv pipeline_rtl/data_mem.sv pipeline_rtl/mux4to1.sv pipeline_rtl/branch_decoder.sv pipeline_rtl/cpu_top.sv tb/cpu_top_tb.sv
 xelab cpu_top_tb -debug typical -s cpu_sim
+```
 
-# To test tooling with UVM, try running hello_uvm.sv inside /tb:
-xvlog -sv -L uvm tb/hello_uvm.sv
-xelab -L uvm tb_top -s hello_sim
-xsim hello_sim -R
-
-# To run ALU test
-xvlog -sv rtl/alu.sv tb/alu_tb.sv
-xelab alu_tb -s alu_sim
-xsim alu_sim -R
-
-# To run cpu_top_tb on one riscv-tests program (here: add)
-xvlog -sv single_cycle_rtl/pkg/rv32i_pkg.sv single_cycle_rtl/alu.sv single_cycle_rtl/decoder.sv single_cycle_rtl/imm_gen.sv single_cycle_rtl/pc.sv single_cycle_rtl/instr_mem.sv single_cycle_rtl/regfile.sv single_cycle_rtl/data_mem.sv single_cycle_rtl/mux4to1.sv single_cycle_rtl/branch_decoder.sv single_cycle_rtl/cpu_top.sv tb/cpu_top_tb.sv
-xelab cpu_top_tb -debug typical -s cpu_sim
+**Run one test** (here: `add`):
+```
 xsim cpu_sim -R -testplusarg TEST_add
+xsim cpu_sim -gui -testplusarg TEST_add    # with waveform
+```
 
-waveform is:
-xsim cpu_sim -gui -testplusarg TEST_add
-
-# To rebuild one test's hex files (WSL, here: lw; only lw and sw have a _data.hex)
+**Rebuild a test's hex** (WSL, here: `lw`; only `lw`/`sw` have a `_data.hex`):
+```
 mkdir -p build
 riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -I tests/riscv-tests/env/p -I tests/riscv-tests/isa/macros/scalar -T tests/riscv-tests/env/p/link.ld -o build/lw.elf tests/riscv-tests/isa/rv32ui/lw.S
 riscv64-unknown-elf-objcopy -O verilog --verilog-data-width=4 -j .text.init --change-addresses -0x80000000 build/lw.elf hex_files/lw.hex
 riscv64-unknown-elf-objcopy -O verilog --verilog-data-width=4 -j .data --change-addresses -0x80002000 build/lw.elf hex_files/lw_data.hex
+```
 
 ![Vivado Waveform](image-1.png)
 
-# Open waveform with XSIm with ALU example
-In the xelab step, add `-debug typical` flag
-Then, xsim alu_sim -gui
-
-# The spec
-https://docs.riscv.org/reference/isa/v20260120/unpriv/unpriv-index.html
-
-# RISCV RV32I Instructions
-https://www.cs.unh.edu/~pjh/courses/cs520/15spr/riscv-rv32i-instructions.pdf
-
-# Instructions Finished:
-Decoded in `single_cycle_rtl/decoder.sv`. Verified with the official [riscv-tests](https://github.com/riscv-software-src/riscv-tests) rv32ui suite (sub-word load/store tests excluded), all 32 passing.
-
-R-type (register-register):
-- [x] add
-- [x] sub
-- [x] sll
-- [x] slt
-- [x] sltu
-- [x] xor
-- [x] srl
-- [x] sra
-- [x] or
-- [x] and
-
-I-type (register-immediate):
-- [x] addi
-- [x] slti
-- [x] sltiu
-- [x] xori
-- [x] ori
-- [x] andi
-- [x] slli
-- [x] srli
-- [x] srai
-
-# Instructions To Do:
-Loads (I-type):
-- [ ] lb
-- [ ] lh
-- [x] lw
-- [ ] lbu
-- [ ] lhu
-
-Stores (S-type):
-- [ ] sb
-- [ ] sh
-- [x] sw
-
-Branches (B-type):
-- [x] beq
-- [x] bne
-- [x] blt
-- [x] bge
-- [x ] bltu
-- [x] bgeu
-
-Jumps:
-- [x] jal (J-type)
-- [x] jalr (I-type)
-
-Upper immediate (U-type):
-- [x] lui
-- [x] auipc
-
-# Pipeline design notes
 
 ![Pipeline notes 1](pipeline1.jpg)
 ![Pipeline notes 2](pipeline2.jpg)
